@@ -14,6 +14,7 @@ library(shiny)
 library(CMISTR)
 library(DT)
 library (leaflet)
+library(rgdal)
 ```
 CMIST User Manual
 ===================================== 
@@ -623,8 +624,7 @@ uncertainties<-eventReactive(input$go,{c(U1= input$U1,
                            R14=input$R14,
                            R15=input$R15,
                            R16=input$R16,
-                           R17=input$R17)%>%
-        if.na="NA"
+                           R17=input$R17)
         
     })
     
@@ -791,10 +791,33 @@ You can set compare CMIST scores of all aquatic invasive species in a region by 
 ```{r map}
 #leaflet map
 #Base Layer map
-lf<-leaflet() %>%
-  setView(lng = -63,
-          lat = 45,
-          zoom = 7) %>%
-  addProviderTiles('Esri.OceanBasemap',
-                   group = 'Ocean')
+# lf<-leaflet() %>%
+#   setView(lng = -63,
+#           lat = 45,
+#           zoom = 7) %>%
+#   addProviderTiles('Esri.OceanBasemap',
+#                    group = 'Ocean')
+
+if (!file.exists("./src/ref/ne_50m_admin_1_states_provinces_lakes/ne_50m_admin_1_states_provinces_lakes.dbf")){
+  download.file(file.path('http://www.naturalearthdata.com/http/',
+                          'www.naturalearthdata.com/download/50m/cultural',
+                          'ne_50m_admin_1_states_provinces_lakes.zip'), 
+                f <- tempfile())
+  unzip(f, exdir = "./src/ref/ne_50m_admin_1_states_provinces_lakes")
+  rm(f)
+}
+
+region <- readOGR("./src/ref/ne_50m_admin_1_states_provinces_lakes", 'ne_50m_admin_1_states_provinces_lakes', encoding='UTF-8')
+
+# region is defined in the first part of the code (see above)
+regions <- subset(region, name %in% c("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Prince Edward Island", "Nova Scotia", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")) 
+
+
+leaflet() %>% 
+  addTiles() %>% 
+  setView(-74.09, 45.7,  zoom = 3) %>% 
+  addPolygons(data = regions, 
+              #fillColor = topo.colors(10, alpha = NULL),
+              weight = 1
+              )
 ```
