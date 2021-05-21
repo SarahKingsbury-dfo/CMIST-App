@@ -812,6 +812,11 @@ region <- readOGR("./src/ref/ne_50m_admin_1_states_provinces_lakes", 'ne_50m_adm
 # region is defined in the first part of the code (see above)
 regions <- subset(region, name %in% c("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Prince Edward Island", "Nova Scotia", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")) 
 
+if(!file.exists("cmist_data.csv")){
+  download.file(file.path("https://www.bio.gc.ca/science/monitoring-monitorage/cmist/data-donnees-en.php?ASM_YEAR=-1&PRJ_ID=-1&COU_ID_1=-1&RG_ID=-1&ASA_STUDY_AREA=-1&MWT_ID=-1&BOW_ID=-1&ASA_SOUTHERN_LATITUDE=&ASA_NORTHERN_LATITUDE=&ASA_WESTERN_LONGITUDE=&ASA_EASTERN_LONGITUDE=&SPC_GENUS-SPC_SPECIES=-1&TAX_ID=-1&ASU_ADJ_RISK_SCORE=#results", "cmist_data.csv"))
+}
+
+cmist.data<- read.csv("data/cmist_data.csv")
 
 leaflet() %>% 
   addTiles() %>% 
