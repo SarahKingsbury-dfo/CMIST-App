@@ -15,6 +15,7 @@ library(CMISTR)
 library(DT)
 library (leaflet)
 library(rgdal)
+library(sf)
 ```
 CMIST User Manual
 ===================================== 
@@ -629,7 +630,7 @@ uncertainties<-eventReactive(input$go,{c(U1= input$U1,
     })
     
  DT::renderDataTable({
-    rbind(risks=req(risks()),uncertainties=req(uncertainties()), rationale=req(rationale()))%>%
+    rbind(risks=req(risks()),uncertainties=req(uncertainties()), rationale=req(rationale()), REFList=req(REFList()), prep=req(prep()))%>%
   datatable(extensions = 'Buttons',
             options = list(dom = 'Blfrtip',
                            buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
@@ -812,11 +813,23 @@ region <- readOGR("./src/ref/ne_50m_admin_1_states_provinces_lakes", 'ne_50m_adm
 # region is defined in the first part of the code (see above)
 regions <- subset(region, name %in% c("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Prince Edward Island", "Nova Scotia", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")) 
 
-if(!file.exists("cmist_data.csv")){
-  download.file(file.path("https://www.bio.gc.ca/science/monitoring-monitorage/cmist/data-donnees-en.php?ASM_YEAR=-1&PRJ_ID=-1&COU_ID_1=-1&RG_ID=-1&ASA_STUDY_AREA=-1&MWT_ID=-1&BOW_ID=-1&ASA_SOUTHERN_LATITUDE=&ASA_NORTHERN_LATITUDE=&ASA_WESTERN_LONGITUDE=&ASA_EASTERN_LONGITUDE=&SPC_GENUS-SPC_SPECIES=-1&TAX_ID=-1&ASU_ADJ_RISK_SCORE=#results", "cmist_data.csv"))
-}
+
+#if(!file.exists("data/cmist_data.csv")){
+  download.file("https://www.bio.gc.ca/science/monitoring-monitorage/cmist/download.php", "data/cmist_data.csv")
+#}
+
 
 cmist.data<- read.csv("data/cmist_data.csv")
+
+  # st_as_sf(coords=c("ASA_NORTHERN_LATITUDE", "ASA_SOUTHERN_LATITUDE", "ASA_WESTERN_LONGITUDE", "ASA_EASTERN_LONGITUDE" ), crs=4326)%>%
+  # summarise(geometry=st_combine(geometry))%>%
+  # st_cast("POLYGON")
+
+# cmist.poly<-matrix(as.numeric(cmist.data,"ASA_NORTHERN_LATITUDE", "ASA_SOUTHERN_LATITUDE", "ASA_WESTERN_LONGITUDE", "ASA_EASTERN_LONGITUDE" ))
+
+  #cmist.data%>%
+  # st_as_sf()%>%
+  # st_transform(crs=4326)
 
 leaflet() %>% 
   addTiles() %>% 
@@ -824,5 +837,7 @@ leaflet() %>%
   addPolygons(data = regions, 
               #fillColor = topo.colors(10, alpha = NULL),
               weight = 1
-              )
+              ) 
+# %>%
+#  addPolygons(data=cmist.poly)
 ```
