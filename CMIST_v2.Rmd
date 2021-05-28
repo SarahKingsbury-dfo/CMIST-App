@@ -122,58 +122,58 @@ Drolet D, DiBacco C, Locke A, McKenzie CH, McKindsey CW, Moore AM, Webb JL, Ther
 CMIST Pre-Assessment Information
 ===================================== 
 
-Column {data-width=400, .sidebar}
+Row {data-height=1000, .tabset}
 -----------------------------------------------------------------------
 ### CMIST Pre-Assessment Information
 Please fill in the pre-assessment information. This information will be combined with the CMIST Assessment Score information and the Reference List into a PDF, a copy of which will be sent to DFO for peer-review and the other copy sent to the assessors email address. 
 
 Note: The CMIST Score, the assessment area, region, country, and location (i.e the latitude and longitude), and the species's information from this assessment report will become part of the CMIST database. Through collecting these value paces of information from multiple CMIST assessments, we are able to provide CMIST app users with the ability to make comparisons between regions or between species within one articular region. By using the CMIST App, you are providing your informed consent that this information will be made public. Please note that the assessor's information will not become part of any public database. Only the DFO peer-reviewers and the assessor will have access to the assessor's personal information. The DFO peer-review staff need access to the assessor's information in case further information or clarification on assessment information is needed. 
 ```{r}
-h3("Assessor Information")
+fillCol(height=600, felx=c(NA,1),
+#h3("Assessor Information"),
 
-textInput("A1", "*Title: Project Title (e.g. Cipangopaludina chinensis Assessment-Maritime Region")
-textInput("A2", "*Description: Please enter a short project or species description")
-textInput("A3", "*Assessor Name:Your Name (first and last)")
-textInput("A4", "*Affilitation: Please enter your affiliation (may enter more than one)")
-textInput("A5", "Address: Please enter your address")
-textInput("A6", "Phone: Enter Phone Number")
-textInput("A7","*Email Adress")
+inputPanel(
+textInput("A1", "*Title: Project Title (e.g. Cipangopaludina chinensis Assessment-Maritime Region"),
+textInput("A2", "*Description: Please enter a short project or species description"),
+textInput("A3", "*Assessor Name:Your Name (first and last)"),
+textInput("A4", "*Affilitation: Please enter your affiliation (may enter more than one)"),
+textInput("A5", "Address: Please enter your address"),
+textInput("A6", "Phone: Enter Phone Number"),
+textInput("A7","*Email Adress"),
 
-h3("Species Information")
+#h3("Species Information"),
 
-textInput("A8", "*Species AphiaID (WoRMS)")
-textInput("A9", "*Species TSN (ITIS)")
-textInput("A10", "Taxon: General taxon or group")
-textInput("A11", "Species Kingdom")
-textInput("A12", "Species Phylum")
-textInput("A13", "Species Subphylum")
-textInput("A14", "Species Class")
-textInput("A15", "Species Order")
-textInput("A16", "Species Family")
-textInput("A17", "*Species Genius")
-textInput("A18", "*Species")
-selectInput("A19", "*Please select the appropriate ecosystem (either Freshwater, Brackish, or Marine)
-", c("Freshwater", "Marine", "Brackish"))
-textInput("A20", "*Please list all common names for the species (e.g. Chinese mystery snail, Mud snail, etc)")
-textInput("A21", "Additional Notes: Additional taxonomic notes here")
+textInput("A8", "*Species AphiaID (WoRMS)"),
+textInput("A9", "*Species TSN (ITIS)"),
+textInput("A10", "Taxon: General taxon or group"),
+textInput("A11", "Species Kingdom"),
+textInput("A12", "Species Phylum"),
+textInput("A13", "Species Subphylum"),
+textInput("A14", "Species Class"),
+textInput("A15", "Species Order"),
+textInput("A16", "Species Family"),
+textInput("A17", "*Species Genius"),
+textInput("A18", "*Species"),
+selectInput("A19", "*Please select the appropriate ecosystem (either Freshwater, Brackish, or Marine),
+", c("Freshwater", "Marine", "Brackish")),
+textInput("A20", "*Please list all common names for the species (e.g. Chinese mystery snail, Mud snail, etc)"),
+textInput("A21", "Additional Notes: Additional taxonomic notes here"),
 
-h3("Study Area Information")
+#h3("Study Area Information"),
 
-textInput("A22", "*Area:Study Area Name")
-textInput("A23", "*Region:Study Region (e.g. Province, State)")
-textInput("A24", "*Country: Country of Study Area")
-textInput("A25", "*Latitude 1: Latitude (northern boundary) in decimal degrees")
-textInput("A26", "*Latitude 2: Latitude (southern boundary) in decimal degrees")
-textInput("A27", "*Longitude 1: Longitude (western boundary) in decimal degrees")
-textInput("A28", "*Longitude 2: Longitude (eastern boundary) in decimal degrees")
+textInput("A22", "*Area:Study Area Name"),
+textInput("A23", "*Region:Study Region (e.g. Province, State)"),
+textInput("A24", "*Country: Country of Study Area"),
+textInput("A25", "*Latitude 1: Latitude (northern boundary) in decimal degrees"),
+textInput("A26", "*Latitude 2: Latitude (southern boundary) in decimal degrees"),
+textInput("A27", "*Longitude 1: Longitude (western boundary) in decimal degrees"),
+textInput("A28", "*Longitude 2: Longitude (eastern boundary) in decimal degrees"),
 
-actionButton("sub", "SUBMIT")
-```
+actionButton("sub", "SUBMIT"),
+tableOutput("prepMaterials")
+))
 
-Row {data-height=600}
------------------------------------------------------------------------
-
-```{r}
+output$prepMaterials<- renderTable({
 prep<-eventReactive(input$sub,{c(A1= input$A1,
                            A2= input$A2,
                            A3=input$A3,
@@ -203,14 +203,260 @@ prep<-eventReactive(input$sub,{c(A1= input$A1,
                            A27=input$A27,
                            A28=input$A28
                            )})
+})
 
-renderTable(req(prep()))
 
 ```
 
+### CMIST Assessment Score
+Please fill in the questions below. Each question is scored on a scale of 1 to 3. The scoring key is in the "Question Considerations" section. Each question has a part (a) for the risk score and a part (b) for the uncertainty score. The risk is the anticipated impacts or likelihood of the event occurring and the uncertainty is the reliability of the answer (i.e. the risk score).The "Rationale" section should be filled out for each corresponding question, this is where assessors provide references and reasoning for each risk score. 
+
+Low certainty=1, little to no reliable information is available and assessor has no experience with species. 
+Moderate certainty=2, some reliable information is available or incomplete information is supplemented with information on (or experience with) a similar species in a similar environment. 
+High certainty=3, considerable reliable information is available or assessor has experience with species and assessment area. 
+
+```{r}
+fillCol(height=1000, felx=c(NA,1),
+
+
+inputPanel(
+      selectInput("Q1",
+                             "1.(a) Is the species established in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U1",
+                             "1.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R1", "1.(c) Rationale:"),
+      selectInput("Q2",
+                             "2.(a) How frequently and in what numbers is the species expected to arrive into the assessment area?",
+                             c(1,2,3)),
+      selectInput("U2",
+                             "2.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R2", "2.(c) Rationale:"),
+      selectInput("Q3",
+                             "3.(a) How much of the assessment area offers suitable habitat for the species?",
+                             c(1,2,3)),
+      selectInput("U3",
+                             "3.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R3", "3.(c) Rationale:"),
+      selectInput("Q4",
+                             "4.(a) How much of the assessment area offers suitable environmental conditions for the species to survive?",
+                             c(1,2,3)),
+      selectInput("U4",
+                             "4.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R4", "4.(c) Rationale:"),
+      selectInput("Q5",
+                             "5.(a) Are the species' reproductive requirements available in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U5",
+                             "5.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R5", "5.(c) Rationale:"),
+      selectInput("Q6",
+                             "6.(a) To what extent could natural control agents slow the species' population growth in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U6",
+                             "6.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R6", "6.(c) Rationale:"),
+      selectInput("Q7",
+                             "7.(a) What is the range of the species' potential natural dispersal in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U7",
+                             "7.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R7", "7.(c) Rationale:"),
+      selectInput("Q8",
+                             "8.(a) What is the range of the species' potential dispersal in the assessment area from anthropogenic mechanisms?",
+                             c(1,2,3)),
+      selectInput("U8",
+                             "8.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R8", "8.(c) Rationale:"),
+      selectInput("Q9",
+                             "9.(a) What level of impact could the species have on population growth of other species in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U9",
+                             "9.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R9", "9.(c) Rationale:"),
+      selectInput("Q10",
+                             "10.(a) What level of impact could the species have on communities in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U10",
+                             "10.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R10", "10.(c) Rationale:"),
+       selectInput("Q11",
+                             "11.(a) What level of impact could the species have on habitat in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U11",
+                             "11.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R11", "11.(c) Rationale:"),
+       selectInput("Q12",
+                             "12.(a) What level of impact could the species have on ecosystem function in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U12",
+                             "12.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R12", "12.(c) Rationale:"),
+       selectInput("Q13",
+                             "13.(a) What level of impact could the species' associated diseases, parasites, or travellers have on other species in the assessment area?",
+                             c(1,2,3)),
+      selectInput("U13",
+                             "13.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+      textInput("R13", "13.(c) Rationale:"),
+       selectInput("Q14",
+                             "14.(a) What level of genetic impact could the species have on other species in the assessment area?",
+                             c(1,2,3)),
+        selectInput("U14",
+                             "14.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+        textInput("R14", "14.(c) Rationale:"),
+        selectInput("Q15",
+                             "15.(a) What level of impact could the species have on at-risk or depleted species in the assessment area?",
+                             c(1,2,3)),
+        selectInput("U15",
+                             "15.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+        textInput("R15", "15.(c) Rationale:"),
+        selectInput("Q16",
+                             "16.(a) What level of impact could the species have on aquaculture and fished species in the assessment area?",
+                             c(1,2,3)),
+        selectInput("U16",
+                             "16.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+        textInput("R16", "16.(c) Rationale:"),
+        selectInput("Q17",
+                             "17.(a) Is the species known or generally considered to be invasive anywhere in the world?",
+                             c(1,2,3)),
+        selectInput("U17",
+                             "17.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                             c(1,2,3)),
+        textInput("R17", "17.(c) Rationale:"),
+        actionButton("go", "SUBMIT"),
+      tableOutput("cmist.table")
+      
+))
+
+output$cmist.table<- renderTable({
+  risks<- eventReactive(input$go,{c(Q1= input$Q1,
+                   Q2= input$Q2,
+                   Q3=input$Q3,
+                   Q4=input$Q4,
+                   Q5=input$Q5,
+                   Q6=input$Q6,
+                   Q7=input$Q7,
+                   Q8=input$Q8,
+                   Q9=input$Q9,
+                   Q10=input$Q10,
+                   Q11=input$Q11,
+                   Q12=input$Q12,
+                   Q13=input$Q13,
+                   Q14=input$Q14,
+                   Q15=input$Q15,
+                   Q16=input$Q16,
+                   Q17=input$Q17)%>%
+    as.numeric()
+})
+    
+uncertainties<-eventReactive(input$go,{c(U1= input$U1,
+                           U2= input$U2,
+                           U3=input$U3,
+                           U4=input$U4,
+                           U5=input$U5,
+                           U6=input$U6,
+                           U7=input$U7,
+                           U8=input$U8,
+                           U9=input$U9,
+                           U10=input$U10,
+                           U11=input$U11,
+                           U12=input$U12,
+                           U13=input$U13,
+                           U14=input$U14,
+                           U15=input$U15,
+                           U16=input$U16,
+                           U17=input$U17)%>%
+        as.numeric()
+    })
+    
+    rationale<-eventReactive(input$go,{c(R1= input$R1,
+                           R2= input$R2,
+                           R3=input$R3,
+                           R4=input$R4,
+                           R5=input$R5,
+                           R6=input$R6,
+                           R7=input$R7,
+                           R8=input$R8,
+                           R9=input$R9,
+                           R10=input$R10,
+                           R11=input$R11,
+                           R12=input$R12,
+                           R13=input$R13,
+                           R14=input$R14,
+                           R15=input$R15,
+                           R16=input$R16,
+                           R17=input$R17)
+    })
+  
+})
+      
+```
+
+### References
+
+Please list all references used in the rationales.
+
+Also include other resources used during the assessment (e.g., models, environmental data, and ancillary information) in the Other Resources column.
+
+Links will be assumed to have been accessed on the date of the CMIST assessment but will not be maintained. References can include websites (please include the URL), publications, reports, theses, etc. Please include the URL or doi link for each reference and provide full bibliography style references. 
+
+```{r}
+
+textInput("C1", "Reference:")
+textInput("C2", "Reference:")
+textInput("C3", "Reference:")
+textInput("C4", "Reference:")
+textInput("C5", "Reference:")
+textInput("C6", "Reference:")
+textInput("C7", "Reference:")
+textInput("C8", "Reference:")
+textInput("C9", "Reference:")
+textInput("C10", "Reference:")
+textInput("C11", "Reference:")
+textInput("C12", "Reference:")
+textInput("C13", "Reference:")
+textInput("C14", "Reference:")
+textInput("C15", "Reference:")
+textInput("C16", "Reference:")
+textInput("C17", "Reference:")
+textInput("C18", "Reference:")
+textInput("C19", "Reference:")
+textInput("C20", "Reference:")
+textInput("C21", "Reference:")
+textInput("C22", "Reference:")
+textInput("C23", "Reference:")
+textInput("C24", "Reference:")
+textInput("C25", "Reference:")
+textInput("C26", "Reference:")
+textInput("C27", "Reference:")
+textInput("C28", "Reference:")
+textInput("C29", "Reference:")
+textInput("C30", "Reference:")
+
+actionButton("ref", "SUBMIT")
+
+```
+
+
 CMIST Scoring {data-orientation=rows}
 =====================================  
-Column {data-width=400, .sidebar}
+Column {data-width=400, .sidebar, .tabset}
 -----------------------------------------------------------------------
 
 
@@ -344,6 +590,52 @@ High certainty=3, considerable reliable information is available or assessor has
         actionButton("go", "SUBMIT")
       
 ```
+
+### References
+
+Please list all references used in the rationales.
+
+Also include other resources used during the assessment (e.g., models, environmental data, and ancillary information) in the Other Resources column.
+
+Links will be assumed to have been accessed on the date of the CMIST assessment but will not be maintained. References can include websites (please include the URL), publications, reports, theses, etc. Please include the URL or doi link for each reference and provide full bibliography style references. 
+
+```{r}
+
+textInput("C1", "Reference:")
+textInput("C2", "Reference:")
+textInput("C3", "Reference:")
+textInput("C4", "Reference:")
+textInput("C5", "Reference:")
+textInput("C6", "Reference:")
+textInput("C7", "Reference:")
+textInput("C8", "Reference:")
+textInput("C9", "Reference:")
+textInput("C10", "Reference:")
+textInput("C11", "Reference:")
+textInput("C12", "Reference:")
+textInput("C13", "Reference:")
+textInput("C14", "Reference:")
+textInput("C15", "Reference:")
+textInput("C16", "Reference:")
+textInput("C17", "Reference:")
+textInput("C18", "Reference:")
+textInput("C19", "Reference:")
+textInput("C20", "Reference:")
+textInput("C21", "Reference:")
+textInput("C22", "Reference:")
+textInput("C23", "Reference:")
+textInput("C24", "Reference:")
+textInput("C25", "Reference:")
+textInput("C26", "Reference:")
+textInput("C27", "Reference:")
+textInput("C28", "Reference:")
+textInput("C29", "Reference:")
+textInput("C30", "Reference:")
+
+actionButton("ref", "SUBMIT")
+
+```
+
 
 Row {data-height=2100}
 -----------------------------------------------------------------------
