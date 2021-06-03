@@ -22,9 +22,9 @@ ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
   
   tabPanel("Pre-Assessment Information",
-            sidebarLayout(
-             
-              sidebarPanel(
+            # sidebarLayout(
+            #  
+            #   sidebarPanel(
                
                h3("Assessor Information"),
                textInput("A1", "*Title: Project Title (e.g. Cipangopaludina chinensis Assessment-Maritime Region"),
@@ -60,18 +60,18 @@ ui<-navbarPage(
                textInput("A25", "*Latitude 1: Latitude (northern boundary) in decimal degrees"),
                textInput("A26", "*Latitude 2: Latitude (southern boundary) in decimal degrees"),
                textInput("A27", "*Longitude 1: Longitude (western boundary) in decimal degrees"),
-               textInput("A28", "*Longitude 2: Longitude (eastern boundary) in decimal degrees"),
+               textInput("A28", "*Longitude 2: Longitude (eastern boundary) in decimal degrees")
                
-               actionButton("sub", "SUBMIT")
-             ),
-             mainPanel(tableOutput("prepMaterials"))
-  )
+             #   actionButton("sub", "SUBMIT")
+             # ),
+             # mainPanel(tableOutput("prepMaterials"))
+ # )
   ),
   
   tabPanel("CMIST Assessment",
-           sidebarLayout(
-             
-             sidebarPanel(
+           # sidebarLayout(
+           #   
+           #   sidebarPanel(
                selectInput("Q1",
                            "1.(a) Is the species established in the assessment area?",
                            c(1,2,3)),
@@ -190,18 +190,18 @@ ui<-navbarPage(
                selectInput("U17",
                            "17.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
                            c(1,2,3)),
-               textInput("R17", "17.(c) Rationale:"),
-               actionButton("go", "SUBMIT")
-             ),
-             mainPanel(tableOutput("cmist.table"),
-                       tableOutput("cmist.score"))
-           )
+               textInput("R17", "17.(c) Rationale:")
+              # actionButton("go", "SUBMIT")
+           #   ),
+           #   mainPanel(tableOutput("cmist.table"),
+           #             tableOutput("cmist.score"))
+           # )
   ),
   
   tabPanel("References",
-           sidebarLayout(
-             
-             sidebarPanel(
+           # sidebarLayout(
+           #   
+           #   sidebarPanel(
                textInput("C1", "Reference:"),
                textInput("C2", "Reference:"),
                textInput("C3", "Reference:"),
@@ -231,21 +231,21 @@ ui<-navbarPage(
                textInput("C27", "Reference:"),
                textInput("C28", "Reference:"),
                textInput("C29", "Reference:"),
-               textInput("C30", "Reference:"),
+               textInput("C30", "Reference:")
                
-               actionButton("ref", "SUBMIT")
-             ),
-             mainPanel(tableOutput("references")) 
-           )
+           #     actionButton("ref", "SUBMIT")
+           #   ),
+           #   mainPanel(tableOutput("references")) 
+           # )
   ),
   
   tabPanel("Summary",
-           sidebarLayout("CMIST Score", DT::dataTableOutput("table1")),
+           sidebarLayout("CMIST Score", tableOutput("table1")),
            mainPanel(
            tabsetPanel(
-             tabPanel("Pre-Assessment Info", DT::dataTableOutput("table2")),
-             tabPanel("CMIST Assessment", DT::dataTableOutput("table3")),
-             tabPanel("Reference List", DT::dataTableOutput("table4"))
+             tabPanel("Pre-Assessment Info", tableOutput("table2")),
+             tabPanel("CMIST Assessment", tableOutput("table3")),
+             tabPanel("Reference List", tableOutput("table4"))
            ))
            ),
   
@@ -259,7 +259,7 @@ server <- function(input, output, session) {
   
   
   
-    prep<-eventReactive(input$sub,{c(A1= input$A1,
+    prep<-reactive({c(A1= input$A1,
                                      A2= input$A2,
                                      A3=input$A3,
                                      A4=input$A4,
@@ -290,7 +290,7 @@ server <- function(input, output, session) {
     )})
     
     
-    risks<- eventReactive(input$go,{c(Q1= input$Q1,
+    risks<- reactive({c(Q1= input$Q1,
                                       Q2= input$Q2,
                                       Q3=input$Q3,
                                       Q4=input$Q4,
@@ -310,7 +310,7 @@ server <- function(input, output, session) {
         as.numeric()
     })
     
-    uncertainties<-eventReactive(input$go,{c(U1= input$U1,
+    uncertainties<-reactive({c(U1= input$U1,
                                              U2= input$U2,
                                              U3=input$U3,
                                              U4=input$U4,
@@ -330,7 +330,7 @@ server <- function(input, output, session) {
         as.numeric()
     })
     
-    rationale<-eventReactive(input$go,{c(R1= input$R1,
+    rationale<-reactive({c(R1= input$R1,
                                          R2= input$R2,
                                          R3=input$R3,
                                          R4=input$R4,
@@ -349,7 +349,7 @@ server <- function(input, output, session) {
                                          R17=input$R17)
     })
     
-    REFList<-eventReactive(input$ref,{c(C1= input$C1,
+    REFList<-reactive({c(C1= input$C1,
                                         C2= input$C2,
                                         C3=input$C3,
                                         C4=input$C4,
@@ -381,30 +381,30 @@ server <- function(input, output, session) {
                                         C30=input$C30)
     })
     
+summaryValue<-reactive(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))
+summaryPrep<-reactive(prep())
+summaryRef<- reactive(REFList())
+    
  #data<- renderTable(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))  
     
-output$prepMaterials<- renderTable({prep()})
-
-output$cmist.score<-renderTable({CMISTScore(req(risks()), req(uncertainties()))})
-  
-output$cmist.table<- renderTable(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))
-#output$cmist.table<-renderTable(data)
-
-output$references<- renderTable({REFList()})
-
-#Not working...need to possible add tabs to table and download function
-output$table1<- DT::renderDataTable({
-  DT::datatable(CMISTScore(req(risks()), req(uncertainties())))
-})
+# output$prepMaterials<- renderTable({prep()})
 # 
-# output$table2<- DT::renderDataTable({
-#   DT::datatable(prep())})
-# REFList()
-# output$table3<-DT::renderDataTable({
-#   DT::datatable(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))})
+# output$cmist.score<- renderTable({CMISTScore(req(risks()), req(uncertainties()))})
+#   
+# output$cmist.table<- renderTable(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))
+# #output$cmist.table<-renderTable(data)
 # 
-output$table4<-DT::renderDataTable({
-  DT::datatable(REFList())})
+# output$references<- renderTable({REFList()})
+# 
+# #Not working...need to possible add tabs to table and download function
+output$table1<- renderTable({CMISTScore(req(risks()), req(uncertainties()))})
+
+ output$table2<- renderTable({summaryPrep()})
+    
+
+ output$table3<-renderTable({summaryValue()})
+
+output$table4<-renderTable({summaryRef()})
  }
 
 
