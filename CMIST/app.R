@@ -17,6 +17,7 @@ library(sf)
 library(leaflet)
 library(tidyverse)
 library(data.table)
+library(openxlsx)
 
 ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
@@ -245,9 +246,11 @@ ui<-navbarPage(
            tabsetPanel(
              tabPanel("Pre-Assessment Info", tableOutput("table2")),
              tabPanel("CMIST Assessment", tableOutput("table3")),
-             tabPanel("Reference List", tableOutput("table4"))
+             tabPanel("Reference List", tableOutput("table4")),
+             box(textInput("downloadName", "Specify desired name of results file"),
+             downloadButton("downloadData", "Download Results")
            ))
-           ),
+           )),
   
   tabPanel("Interactive Map",
            leafletOutput("leafletmap",height=800)
@@ -384,27 +387,32 @@ server <- function(input, output, session) {
 summaryValue<-reactive(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))
 summaryPrep<-reactive(prep())
 summaryRef<- reactive(REFList())
-    
- #data<- renderTable(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))  
-    
-# output$prepMaterials<- renderTable({prep()})
-# 
-# output$cmist.score<- renderTable({CMISTScore(req(risks()), req(uncertainties()))})
-#   
-# output$cmist.table<- renderTable(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))
-# #output$cmist.table<-renderTable(data)
-# 
-# output$references<- renderTable({REFList()})
-# 
-# #Not working...need to possible add tabs to table and download function
+
 output$table1<- renderTable({CMISTScore(req(risks()), req(uncertainties()))})
 
- output$table2<- renderTable({summaryPrep()})
+output$table2<- renderTable({summaryPrep()})
     
 
- output$table3<-renderTable({summaryValue()})
+output$table3<-renderTable({summaryValue()})
 
 output$table4<-renderTable({summaryRef()})
+
+output$downloadData<- downloadHandler(
+  filename=function(){
+    paste(input$downloadName, ".xlsx", sep="")
+  },
+  content=function(file){
+    
+     wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
+     addWorksheet(wb, "CMIST_Data")
+     addWorksheet(wb, "References")
+     writeData(wb, "CMIST_Data", summaryValue())
+     writeData(wb, "References", summaryRef())
+     saveWorkbook(wb, file, overwrite = TRUE)
+   
+  }
+)
+
  }
 
 
