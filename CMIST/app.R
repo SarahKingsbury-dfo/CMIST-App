@@ -1,10 +1,5 @@
 #
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
+# 
 #
 
 library(tidyverse)
@@ -18,6 +13,14 @@ library(leaflet)
 library(tidyverse)
 library(data.table)
 library(openxlsx)
+library(ggplot2)
+library(dplyr)
+
+# library(readr)
+# cmist_data_5_ <- read_csv("data/cmist_data (5).csv")
+
+cmist_database<-read.csv("data/cmist_data.csv")
+   #mutate(SPC_GENUS.SPC_SPECIES=paste(cmist_database$SPC_GENUS, cmist_database$SPC_SPECIES, sep = "_"))
 
 ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
@@ -243,6 +246,17 @@ ui<-navbarPage(
   tabPanel("Summary",
            sidebarLayout("CMIST Score", tableOutput("table1")),
            mainPanel(
+             plotOutput("cmist.plot", click =  "plot.click"),
+             verbatimTextOutput("cmist_Score"),
+             radioButtons("err_bar", "Error Bar", c("With error bar"="yes",
+                                                    "No error bar"="no")),
+             # radioButtons("comp", "Comparisons",
+             #              c("Compare with other species in the CMIST Database"="yes",
+             #                "Don't turn on comparisons"="no")),
+             # selectInput(inputId = "filterID", label="Filter by Species",
+             #             choices=unique(cmist_database$SPC_GENUS.SPC_SPECIES)),
+             # selectInput(inputId = "filterRegion", label = "Filter by Region",
+             #             choices = unique (cmist_database$ASA_STUDY_AREA)),
            tabsetPanel(
              tabPanel("Pre-Assessment Info", tableOutput("table2")),
              tabPanel("CMIST Assessment", tableOutput("table3")),
@@ -387,8 +401,31 @@ server <- function(input, output, session) {
 summaryValue<-reactive(rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))
 summaryPrep<-reactive(prep())
 summaryRef<- reactive(REFList())
+summaryScore<- reactive(CMISTScore(req(risks()), req(uncertainties())))
 
-output$table1<- renderTable({CMISTScore(req(risks()), req(uncertainties()))})
+output$table1<- renderTable(summaryScore())
+
+#output$table1<- renderTable({CMISTScore(req(risks()), req(uncertainties()))})
+
+output$cmist.plot<-renderPlot({
+  #plot(summaryScore(Likelihood_Score, Impact_Score))
+  cm<-summaryScore()
+  # cm_impact<- cm$Impact_Score
+  # cm_like<-cm$Likelihood_Score
+  cm_plot<-ggplot(cm, aes(x=Impact_Score, y=Likelihood_Score), xlab="Impact_Score", ylab="Likelihood_Score")+
+    geom_point(size=3)
+  cm_w_Y_error<- cm_plot +
+    geom_errorbar(aes( ymin=Likelihood_Lower, ymax=Likelihood_Upper))
+  cm_w_XY_error<-cm_w_Y_error+
+    geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper))
+  cm_w_XY_error  
+  })
+
+output$cmist_score<-renderPrint({
+  req(input$plot.hover)
+  text.cm<-summaryScore()
+  test.cm.score<-text.cm$CMIST_Score
+})
 
 output$table2<- renderTable({summaryPrep()})
     
