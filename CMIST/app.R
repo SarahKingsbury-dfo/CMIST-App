@@ -20,11 +20,116 @@ library(dplyr)
 # cmist_data_5_ <- read_csv("data/cmist_data (5).csv")
 
 cmist_database<-read.csv("data/cmist_data.csv")
-   #mutate(SPC_GENUS.SPC_SPECIES=paste(cmist_database$SPC_GENUS, cmist_database$SPC_SPECIES, sep = "_"))
+
+cmist_database<-cmist_database%>%
+   dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(cmist_database$SPC_GENUS, cmist_database$SPC_SPECIES, sep = "_"))
+
+scale<-list(1,2,3,4,5,6,7,8)
 
 ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
   
+#   tabPanel("CMIST Home Page",
+#            tabsetPanel(
+#              tabPanel("User Manual",
+#                       h3("Highlights"),
+#                       h5(".	CMIST was designed for and tested with marine invertebrates, but its theoretical basis and general questions make it suitable for other organisms."),
+#                       h5("
+# .	Screening-level risk assessments in CMIST are designed to be completed in 1-2 days including collection of information and answering questions. "),
+#                       h5("
+# .	Assessors should have good general knowledge on invasive species and, ideally, the assessment area and species being assessed."),
+#                       h5("
+# .	Prior to assessment, background information on the selected species that pertains to CMIST questions should be collated from available resources and quickly reviewed. "),
+#                       h5("
+# .	Assessors should always use their best judgement when interpreting questions, answers, and guidance for the selected species, which will likely not have species or taxon-specific examples."),
+#                       h5("
+# .	Assessors should read the manual before completing any assessments to ensure consistency with guidance.
+# "),
+#                       
+#                       h3("Introduction"),
+#                       h5("CMIST (Canadian Marine Invasive Screening Tool) assessments provide information on the likelihood and impact of invasions of different species in different assessment areas with scores adjusted for assessor uncertainty. Together, these assessments act as a new resource of collated information on invasive species that can assist researchers and managers dealing with aquatic invasive species (AIS) and increase the efficiency of decision-making. The growing database of CMIST assessments is as an important repository for information on invasive species for students, researchers, and citizens around the world."),
+#                       h5("
+# The Canadian Marine Invasive Screening Tool (CMIST) is a peer-reviewed screening-level risk assessment tool for marine invasive species (Drolet et al. 2016). It is a short questionnaire that follows the invasion process from arrival to impact and is designed so an informed assessor can evaluate one species in an assessment area in approximately one day using easily accessible information from internet databases, primary literature, and grey literature. Species can be those with an invasion history in an area or those that are candidates for future invasions. "),
+#                       h5("
+# CMIST is score-based and incorporates both likelihood and impact of invasion as well as uncertainty. Questions are general to make CMIST broadly applicable to different taxa, different assessment areas, and different project goals. To date, CMIST has been tested with molluscs, tunicates, crustaceans, and polychaetes introduced or at risk of introduction to three Canadian marine ecoregions (DFO 2009). CMIST has also been successfully applied to non-indigenous freshwater fish in British Columbia with adapted guidelines (T. Therriault, pers. comm.). Upon completion, CMIST produces a risk score adjusted for the assessor's uncertainty which, combined with information collected during the assessment, can be used to assist in management decisions. For example, in 2015, CMIST assessments were used to identify high risk invaders in three Canadian marine ecoregions (DFO 2016). Completed assessments submitted from assessors are reviewed for accuracy and completeness then housed online in the searchable CMIST database. "),
+#                       h5("
+# This manual contains best practices for using CMIST and should be read in full before proceeding with an assessment to achieve consistent results. For more in-depth background information, refer to Drolet et al. (2016).
+# "),
+#                       
+#                       h3("Pre-assessment Preparation"),
+#                       h4("Species"),
+#                       h5("Although CMIST was designed for and tested with marine invertebrates, its theoretical basis and general questions makes it suitable for other organisms. Assessors should always use their best judgement when interpreting questions, answers, and guidance for the selected species, which will likely not have species or taxon-specific examples."),
+#                       h5("
+# Prior to assessment, background information on the selected species that pertains to CMIST questions should be collated from available resources and quickly reviewed. If there is little known about the species, information on other species in the genus (or higher taxonomic level) should be obtained and used as complementary resources. A lack of species-specific information would be expected to increase uncertainty.
+# "),
+#                       h4("Assessment area"),
+#                       h5("The assessment area can be any size or scope but must be defined since most CMIST questions use this assessment area as a context for answers (see Appendix A for questions, answers, and guidance).  It is up to the assessor to determine (and document) the scale used for their assessment."),
+#                       h5("
+# Prior to assessment, background information should be collated on the assessment area from available resources and quickly reviewed. Pertinent information includes both physical characteristics (e.g., bottom types, habitats, temperature range, and salinity range) and biological components (e.g., species at risk, aquaculture species, commercially fished species, and species of special interest).
+# "),
+#                       h4("Assessor"),
+#                       h5("All CMIST questions are semi-quantitative and require interpretation and judgement to answer based on available information as well as the assessor's expert opinion. An assessor should therefore have good general knowledge on invasive species and, ideally, the assessment area and species being assessed. A less-knowledgeable assessor would be expected to have higher uncertainty, especially for species with little available information.
+# 
+# Prior to assessment, assessors should review background information on the species and assessment area and familiarize themselves with CMIST questions, answers, guidance, and glossary. 
+# "),
+#                       
+#                       h3("Using CMIST"),
+#                       h4("1) Assessment Information"),
+#                       h5("This section contains general information about the species, the assessment area, and the assessor. If you submit your assessment for inclusion in the CMIST database, you must complete all information labelled with an asterisk. Contact information including address, phone, and email is for communication purposes only and will not be made publicly available. "),
+#                       h4("2) CMIST Assessment"),
+#                       h5("This section contains the questionnaire and final risk scores for CMIST. The assessor should answer questions by entering risk scores, uncertainty scores, and rationales in the designated cells. To obtain the risk score adjusted for uncertainty, press the "Calculate adjusted risk scores" button. Adjusted risk scores and lower and upper confidence limits will then be displayed. See below for guidance on specific sections."),
+#                       h5("Questions"),
+#                       h6("CMIST has 17 questions that follow the invasion process: arrival (Q1 and Q2), survival (Q3 and Q4), establishment (Q5 and Q6), spread (Q7 and Q8), and impact (Q9-Q17). The first 8 questions relate to the likelihood of invasion and the next 9 questions relate to the impact of invasion."),
+#                       h6("
+# Many terms used in CMIST questions (e.g., population growth, invasive, community) have different definitions depending on perspective and context. Such terms and their intent in the CMIST context are defined in the glossary. 
+# "),
+#                       h5("Answers"),
+#                       h6("Each question has three possible answers (1-3). Answers differ between questions and should be considered carefully in conjunction with the risk score guidance before entering a score."),
+#                       h5("Risk score"),
+#                       h6("Risk scores of low (1), moderate (2), and high (3) are entered based on the interpretation of the question, answers, and risk score guidance in the context of available information for the species. When information is not readily available or is of poor quality or when there is conflicting information, assessors should use their best judgement to decide on a score and adjust the uncertainty score accordingly. In the absence of any information on a species, information from similar species in the same genus (or higher taxonomic level) should be used."),
+#                       h5("Uncertainty score"),
+#                       h6("Uncertainty scores are determined based on the availability and quality of information and the level of expertise of the assessor as follows: "),
+#                       h6("
+# 1 - Low certainty - Little to no reliable information is available AND the assessor has no experience with the species."),
+#                       h6("
+# 2 - Moderate certainty - Some reliable information is available. If information is incomplete, it is supplemented with information on or experience with similar species in a similar environment."),
+#                       h6("
+# 3 - High certainty - A considerable amount of reliable information is available OR the assessor has first-hand experience with the species and the assessment area.
+# "),
+#                       h5("Rationale"),
+#                       h6("The rationale is a short summary of the reasoning behind both the risk score and uncertainty score for each question, including relevant information and sources. Rationales can include direct quotes from databases or literature or a paraphrased summary or an expert reasoning. Short yes or no statements are less valuable and should be avoided. All sources should be listed in annotated form, with full references listed in the References sheet. "),
+#                       h5("Raw scores"),
+#                       h6("Raw scores for likelihood of invasion, impact of invasion, and mean risk score are calculated using individual question risk scores only (not uncertainty scores) as follows: "),
+#                       h6("
+# Likelihood of invasion: mean Q1 to Q8, range 1-3"),
+#                       h6("
+# Impact of invasion: mean Q9 to Q17, range 1-3"),
+#                       h6("
+# Mean risk score: Likelihood of invasion x Impact of invasion, range 1-9"),
+#                       h6("
+# Raw scores are not displayed but can be calculated using the above formulas if required. 
+# "),
+#                       h5("Adjusted scores"),
+#                       h6("Adjusted risk scores (i.e., Likelihood of invasion, Impact of invasion, and CMIST score) are calculated by incorporating uncertainty scores with risk scores in a Monte Carlo simulation (see Drolet et al. (2016) for detailed explanation). To obtain adjusted risk scores in CMIST, press the "Calculate adjusted risk scores" button after all risk scores and uncertainty scores have been entered. Once the button has been pressed, any changes to risk or uncertainty scores for questions will automatically be reflected. Because this method uses random numbers, if the button is pressed again, adjusted risk scores will be recalculated with new random numbers and may generate slightly different scores and confidence limits."),
+#                       h6("
+# We recommend using adjusted risk scores because they allow uncertainty to be quantified and incorporated into the risk score. However, raw risk scores may also be used in conjunction with question-specific uncertainty and rationales depending on the needs and objectives of the assessor or managers. Adjusted risk scores should always be reported with their confidence limits.
+# "),
+#                       
+#                       h4("3) References"),
+#                       h5("This section is a list of the resources used in the rationales on the CMIST Assessment sheet. Websites and publications should be listed separately in this sheet in the indicated columns in a consistent format. If additional resources were used during the assessment but not used specifically in the rationales (e.g., models, environmental data, and ancillary information), include them in the Additional Resources column. There is no prescribed format for references, but the information should be complete enough to guide others to the resource. References listed here may be included as suggested resources for future assessments in a given assessment area. "),
+#                       h5("Literature Cited"),
+#                       h6("DFO (2009) Development of a framework and principles for the biogeographic classification of Canadian marine areas. DFO Canadian Science Advisory Secretariat Science Advisory Report 2009/056, p 17"),
+#                       h6("
+# DFO (2016) Proceedings of the national science advisory process to peer review the marine screening-level risk assessment tool for aquatic non-indigenous species; February 4-6, 2015. DFO Can. Sci. Advis. Sec. Proceed. Ser. 2016/033"),
+#                       h6("
+# Drolet D, DiBacco C, Locke A, McKenzie CH, McKindsey CW, Moore AM, Webb JL, Therriault TW (2016) Evaluation of a new screening-level risk assessment tool applied to non-indigenous marine invertebrates in Canadian coastal waters. Biological Invasions. 18(1): 279-294 DOI:10.1007/s10530-015-1008-y
+# "),
+#                       ),
+#              tabPanel(),
+#              tabPanel()
+#            )
+#   ),
+#   
   tabPanel("Pre-Assessment Information",
             # sidebarLayout(
             #  
@@ -50,7 +155,7 @@ ui<-navbarPage(
                textInput("A14", "Species Class"),
                textInput("A15", "Species Order"),
                textInput("A16", "Species Family"),
-               textInput("A17", "*Species Genius"),
+               textInput("A17", "*Species Genus"),
                textInput("A18", "*Species"),
                selectInput("A19", "*Please select the appropriate ecosystem (either Freshwater, Brackish, or Marine)", c("Freshwater", "Marine", "Brackish")),
                textInput("A20", "*Please list all common names for the species (e.g. Chinese mystery snail, Mud snail, etc)"),
@@ -244,27 +349,35 @@ ui<-navbarPage(
   ),
   
   tabPanel("Summary",
-           sidebarLayout("CMIST Score", tableOutput("table1")),
+           sidebarLayout(
+             
+             sidebarPanel(
+               
+              # "CMIST Score", tableOutput("table1"),
+               selectInput(inputId = "filterID", label="Filter by Species",
+                           choices=unique(cmist_database$SPC_GENUS.SPC_SPECIES)),
+               selectInput(inputId = "filterRegion", label = "Filter by Region",
+                           choices = unique (cmist_database$ASA_STUDY_AREA)),
+           radioButtons("err_bar", "Error Bar", c("With error bar"="yes",
+                                                  "No error bar"="no")),
+           radioButtons("comp", "Filter On/OFF",
+                        c("Turn on Filters"="yes",
+                          "Turn off Filters"="no"))
+           ),
+           
            mainPanel(
              plotOutput("cmist.plot", click =  "plot.click"),
-             verbatimTextOutput("cmist_Score"),
-             radioButtons("err_bar", "Error Bar", c("With error bar"="yes",
-                                                    "No error bar"="no")),
-             # radioButtons("comp", "Comparisons",
-             #              c("Compare with other species in the CMIST Database"="yes",
-             #                "Don't turn on comparisons"="no")),
-             # selectInput(inputId = "filterID", label="Filter by Species",
-             #             choices=unique(cmist_database$SPC_GENUS.SPC_SPECIES)),
-             # selectInput(inputId = "filterRegion", label = "Filter by Region",
-             #             choices = unique (cmist_database$ASA_STUDY_AREA)),
+             verbatimTextOutput("text1"),
+             plotOutput("filterPlot", click="filtered.click"),
+             verbatimTextOutput("text2"),
            tabsetPanel(
              tabPanel("Pre-Assessment Info", tableOutput("table2")),
              tabPanel("CMIST Assessment", tableOutput("table3")),
              tabPanel("Reference List", tableOutput("table4")),
              box(textInput("downloadName", "Specify desired name of results file"),
-             downloadButton("downloadData", "Download Results")
+                 downloadButton("downloadData", "Download Results")
            ))
-           )),
+           ))),
   
   tabPanel("Interactive Map",
            leafletOutput("leafletmap",height=800)
@@ -273,6 +386,7 @@ ui<-navbarPage(
 
 
 server <- function(input, output, session) {
+  
   
   
   
@@ -403,26 +517,39 @@ summaryPrep<-reactive(prep())
 summaryRef<- reactive(REFList())
 summaryScore<- reactive(CMISTScore(req(risks()), req(uncertainties())))
 
-output$table1<- renderTable(summaryScore())
+#output$table1<- renderTable(summaryScore())
 
-#output$table1<- renderTable({CMISTScore(req(risks()), req(uncertainties()))})
-
-output$cmist.plot<-renderPlot({
-  #plot(summaryScore(Likelihood_Score, Impact_Score))
+output$cmist.plot<- renderPlot({
   cm<-summaryScore()
-  # cm_impact<- cm$Impact_Score
-  # cm_like<-cm$Likelihood_Score
-  cm_plot<-ggplot(cm, aes(x=Impact_Score, y=Likelihood_Score), xlab="Impact_Score", ylab="Likelihood_Score")+
-    geom_point(size=3)
-  cm_w_Y_error<- cm_plot +
-    geom_errorbar(aes( ymin=Likelihood_Lower, ymax=Likelihood_Upper))
-  cm_w_XY_error<-cm_w_Y_error+
-    geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper))
-  cm_w_XY_error  
+  cm_plot<-ggplot(cm, aes(x=Impact_Score, y=Likelihood_Score))+
+    geom_point(colour="red", size=5)
+  if(input$err_bar=="yes") {cm_plot<- cm_plot +
+    geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper))+
+    geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper))}
+  if(input$comp=="yes"){cm_plot<-
+    cm_plot+geom_point(data=cmist_database, aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="blue")}
+  cm_plot
+})
+  
+  select_species<-reactive({
+    cmist_database%>%
+      filter(SPC_GENUS.SPC_SPECIES==input$filterID)%>%
+      filter(ASA_STUDY_AREA==input$filterRegion)
   })
+  
+
+output$filterPlot<- renderPlot({
+  cm<-summaryScore()
+  ss<-select_species()
+  p<-ggplot(cm, aes(x=Impact_Score, y=Likelihood_Score))+
+    geom_point(colour="red", size=5)
+  if(input$comp=="yes"){p<-p +geom_point(data=ss,
+                                         aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="blue")}
+  p
+})
 
 output$cmist_score<-renderPrint({
-  req(input$plot.hover)
+  req(input$plot.click)
   text.cm<-summaryScore()
   test.cm.score<-text.cm$CMIST_Score
 })
