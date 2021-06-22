@@ -51,21 +51,25 @@ Canada_map<- leaflet()%>%
 
 #creating a colour pallete for the cmist database
 mist_sf_map<-mist_sf%>%
+  mutate(ASA_STUDY_AREA=as.factor(ASA_STUDY_AREA))%>%
   st_as_sf()%>%
   st_transform(crs=4326)
 
-# binpal<- colorFactor("Blues", mist_sf_map$g, 210)
-# 
-# #adding the cmist database polygons to the map
-# cmist_map<- Canada_map%>%
-#   addTiles()%>%
-#   addPolygons(data=mist_sf_map,  
-#               fillColor = ~binpal(g), 
-#               stroke = FALSE, 
-#               #fillOpacity = 0.2,
-#               layerId = "raster")%>%
-#   addOpacitySlider(layerId = "raster")
-# cmist_map
+binpal<- colorFactor("Blues", mist_sf_map$ASA_STUDY_AREA, 9)
+
+#adding the cmist database polygons to the map
+cmist_map<- Canada_map%>%
+  addTiles()%>%
+  addPolygons(data=mist_sf_map,
+              weight=2,
+              col='blue',
+              fillColor = mist_sf_map$ASA_STUDY_AREA,
+              # stroke = FALSE,
+               fillOpacity = 0.005
+              # layerId = "raster")
+  )
+  #addOpacitySlider(layerId = "raster")
+cmist_map
 
 ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
@@ -768,16 +772,17 @@ server <- function(input, output, session) {
   output$table4<-renderTable({summaryRef()})
   
   
-  
-  # wb<-createWorkbook()
-  # addWorksheet(wb, "Pre_Assessment_Info")
-  #  addWorksheet(wb, "CMIST_Data")
-  #  addWorksheet(wb, "References")
-  #  addWorksheet(wb, "CMIST_Score")
-  #writeData(wb, "Pre_Assessment_Info", req(summaryPrep()))
-  # reactive(writeData(wb, "CMIST_Data", summaryValue()))
-  # reactive( writeData(wb, "References", summaryRef))
-  # reactive( writeData(wb, "CMIST_Score", summaryScore))
+  # wb<- reactive({
+  #   browser()
+  #   writeData(wb, "Pre_Assessment_Info", req(summaryPrep()))
+  #   addWorksheet(wb, "CMIST_Data")
+  #   addWorksheet(wb, "References")
+  #   addWorksheet(wb, "CMIST_Score")
+  #   
+  #   writeData(wb, "CMIST_Data", summaryValue())
+  #   writeData(wb, "References", summaryRef())
+  #   writeData(wb, "CMIST_Score", summaryScore())
+  # })
   
   
   
@@ -787,18 +792,19 @@ server <- function(input, output, session) {
       paste(input$downloadName, ".xlsx", sep="")
     },
     content=function(file){
-      
-      wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")  
+
+      wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
       # #wb<-createWorkbook()
       #  #addWorksheet(wb, "Pre_Assessment_Info")
       addWorksheet(wb, "CMIST_Data")
       addWorksheet(wb, "References")
       addWorksheet(wb, "CMIST_Score")
-      
+
       writeData(wb, "Pre_Assessment_Info", summaryPrep())
       writeData(wb, "CMIST_Data", summaryValue())
       writeData(wb, "References", summaryRef())
       writeData(wb, "CMIST_Score", summaryScore())
+
       
       saveWorkbook(wb, file, overwrite = TRUE)
       
@@ -823,27 +829,63 @@ server <- function(input, output, session) {
   #   
   # })
   
-  # observeEvent(input$email,{
-  #   
-  #   wb<- write.xlsx(summaryPrep(), sheetName="Pre_Assessment_Info")  
-  #   addWorksheet(wb, "CMIST_Data")
-  #   addWorksheet(wb, "References")
-  #   addWorksheet(wb, "CMIST_Score")
-  # 
-  #   writeData(wb, "Pre_Assessment_Info", summaryPrep())
-  #   writeData(wb, "CMIST_Data", summaryValue())
-  #   writeData(wb, "References", summaryRef())
-  #   writeData(wb, "CMIST_Score", summaryScore())
-  # 
-  #   saveWorkbook(wb, overwrite = TRUE)
-  # 
-  #   from<-input$A7
-  #   to<-sarah.kingsbury@dfo-mpo.gc.ca
-  #   subject<-paste("CMIST Assessment", input$A1, sep="")
-  #   body<- "Enter any message or considerations you would like the CMIST assessors to know."
-  #   #files<-c(wb)
-  #   send.mail(from=from, to=to, subject=subject, body=body, attach.files = wb, send=TRUE)
-  # })
+  observeEvent(input$email,{
+# 
+#     wb<- write.xlsx(summaryPrep(), sheetName="Pre_Assessment_Info")
+#     addWorksheet(wb, "CMIST_Data")
+#     addWorksheet(wb, "References")
+#     addWorksheet(wb, "CMIST_Score")
+# 
+#     writeData(wb, "Pre_Assessment_Info", summaryPrep())
+#     writeData(wb, "CMIST_Data", summaryValue())
+#     writeData(wb, "References", summaryRef())
+#     writeData(wb, "CMIST_Score", summaryScore())
+# 
+#     saveWorkbook(wb, file=paste(input$downloadName, ".xlsx", sep=""),overwrite = TRUE)
+    # wb<-function(file){
+    #   
+    #   wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
+    #   # #wb<-createWorkbook()
+    #   #  #addWorksheet(wb, "Pre_Assessment_Info")
+    #   addWorksheet(wb, "CMIST_Data")
+    #   addWorksheet(wb, "References")
+    #   addWorksheet(wb, "CMIST_Score")
+    #   
+    #   writeData(wb, "Pre_Assessment_Info", summaryPrep())
+    #   writeData(wb, "CMIST_Data", summaryValue())
+    #   writeData(wb, "References", summaryRef())
+    #   writeData(wb, "CMIST_Score", summaryScore())
+    #   
+    #   
+    #   saveWorkbook(wb, file, overwrite = TRUE)
+    #   
+    # }
+
+    from<-"sarah.kingsbury@dfo-mpo.gc.ca"
+    to<-"sarahberry231@gmail.com"
+    subject<-#paste(
+      "CMIST Assessment" 
+      #input$A1, sep="")
+    body<- "Enter any message or considerations you would like the CMIST assessors to know."
+    
+    send.mail(from=from, to=to, subject=subject, body=body, attach.files = function(file){
+      
+      wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
+      addWorksheet(wb, "CMIST_Data")
+      addWorksheet(wb, "References")
+      addWorksheet(wb, "CMIST_Score")
+      
+      writeData(wb, "Pre_Assessment_Info", summaryPrep())
+      writeData(wb, "CMIST_Data", summaryValue())
+      writeData(wb, "References", summaryRef())
+      writeData(wb, "CMIST_Score", summaryScore())
+      
+      
+      saveWorkbook(wb, file, overwrite = TRUE)
+      
+    },
+    encoding = "iso-8859-1", html = FALSE, authenticate = FALSE, send=TRUE)
+  })
   
   output$leafletmap<- renderLeaflet({
     Canada_map
