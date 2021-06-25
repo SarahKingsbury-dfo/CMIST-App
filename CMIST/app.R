@@ -25,51 +25,75 @@ library(mailR)
 
 proj <- "+proj=longlat +datum=WGS84"
 
-cmist_database<-read.csv("data/cmist_data.csv")
+#cmist_database<-read.csv("data/cmist_data.csv")
+
+CMISTdata <- get_CMIST_database()%>%
+  dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(CMISTdata$SPC_GENUS, CMISTdata$SPC_SPECIES, sep = "_"),
+                                 g=as.numeric(row.names(.)))
+  # dplyr::mutate(ASA_EASTERN_LONGITUDE=as.numeric(ASA_EASTERN_LONGITUDE),
+  #               ASA_NORTHERN_LATITUDE=as.numeric(ASA_NORTHERN_LATITUDE),
+  #               ASA_SOUTHERN_LATITUDE=as.numeric(ASA_SOUTHERN_LATITUDE),
+  #               ASA_WESTERN_LONGITUDE=as.numeric(ASA_WESTERN_LONGITUDE))
+  # #group_by(g) %>%
+  # dplyr::mutate(pt1=st_point(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE), dim = XY),
+  #               pt2=st_point(c(ASA_EASTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE), dim = XY),
+  #               pt3=st_point(c(ASA_WESTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE), dim = XY),
+  #               pt4=st_point(c(ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE), dim = XY),
+  #               pt5=st_point(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE), dim = XY))%>%
+  # dplyr::mutate(geom=st_polygon(x=list(pt1, pt2, pt3, pt4, pt5)))
+
+  # dplyr::mutate(geometry=
+  #                 matrix(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
+  #                          ASA_EASTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
+  #                          ASA_WESTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
+  #                          ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
+  #                          ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE),
+  #                        ncol=2,byrow = TRUE))
 
 
 #generating a geometry for polygons of the cmist database
-mist_sf<-cmist_database%>%
-  dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(cmist_database$SPC_GENUS, cmist_database$SPC_SPECIES, sep = "_"),
-                g=as.numeric(row.names(.))) %>%
-  rowwise() %>%
-  mutate(geometry=
-           matrix(c( ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
-                     ASA_EASTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
-                     ASA_WESTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
-                     ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
-                     ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE),
-                  ncol=2,byrow = TRUE) %>%
-            list() %>%
-            st_polygon() %>%
-             st_sfc(crs="+proj=longlat +datum=WGS84")) 
-
-#setting the base map to Canada   
-Canada_map<- leaflet()%>%
-  setView(lng=-106.9299, lat=51.9788, zoom=3)%>% 
-  addTiles()
-
-#creating a colour pallete for the cmist database
-mist_sf_map<-mist_sf%>%
-  mutate(ASA_STUDY_AREA=as.factor(ASA_STUDY_AREA))%>%
-  st_as_sf()%>%
-  st_transform(crs=4326)
-
-binpal<- colorFactor("Blues", mist_sf_map$ASA_STUDY_AREA, 9)
-
-#adding the cmist database polygons to the map
-cmist_map<- Canada_map%>%
-  addTiles()%>%
-  addPolygons(data=mist_sf_map,
-              weight=2,
-              col='blue',
-              fillColor = mist_sf_map$ASA_STUDY_AREA,
-              # stroke = FALSE,
-               fillOpacity = 0.005
-              # layerId = "raster")
-  )
-  #addOpacitySlider(layerId = "raster")
-cmist_map
+# mist_sf<-CMISTdata%>%
+#   rowwise() %>%
+#   dplyr::mutate(geometry=
+#            matrix(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
+#                      ASA_EASTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
+#                      ASA_WESTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
+#                      ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
+#                      ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE),
+#                   ncol=2,byrow = TRUE) %>%
+#            as.numeric()%>%
+#             list() %>%
+#             st_polygon() %>%
+#            st_sfc(proj)
+#              #st_sfc(crs="+proj=longlat +datum=WGS84")
+#          )
+# 
+# #setting the base map to Canada
+# Canada_map<- leaflet()%>%
+#   setView(lng=-106.9299, lat=51.9788, zoom=3)%>%
+#   addTiles()
+# 
+# #creating a colour pallete for the cmist database
+# mist_sf_map<-mist_sf%>%
+#   mutate(ASA_STUDY_AREA=as.factor(ASA_STUDY_AREA))%>%
+#   st_as_sf()%>%
+#   st_transform(crs=4326)
+# 
+# binpal<- colorFactor("Blues", mist_sf_map$ASA_STUDY_AREA, 9)
+# 
+# #adding the cmist database polygons to the map
+# cmist_map<- Canada_map%>%
+#   addTiles()%>%
+#   addPolygons(data=mist_sf_map,
+#               weight=2,
+#               col='blue',
+#               fillColor = mist_sf_map$ASA_STUDY_AREA,
+#               # stroke = FALSE,
+#                fillOpacity = 0.005
+#               # layerId = "raster")
+#   )
+#   #addOpacitySlider(layerId = "raster")
+# cmist_map
 
 ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
@@ -525,11 +549,11 @@ ui<-navbarPage(
                h4("You can costumize the plots seen in the main panel by selecting various options below:"),
                h5("Filter plots by species:"),
                selectInput(inputId = "filterID", label="Filter by Species",
-                           choices=unique(cmist_database$SPC_GENUS.SPC_SPECIES)),
+                           choices=unique(CMISTdata$SPC_GENUS.SPC_SPECIES)),
                
                h5("Filter CMIST Scores by Geographic Region:"),
                selectInput(inputId = "filterRegion", label = "Filter by Region",
-                           choices = unique (cmist_database$ASA_STUDY_AREA)),
+                           choices = unique (CMISTdata$ASA_STUDY_AREA)),
                
            radioButtons("err_bar", "Error Bar", c("With error bar"="yes",
                                                   "No error bar"="no")),
@@ -737,12 +761,12 @@ server <- function(input, output, session) {
       geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper))+
       geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper))}
     if(input$comp=="yes"){cm_plot<-
-      cm_plot+geom_point(data=cmist_database, aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="blue")}
+      cm_plot+geom_point(data=CMISTdata, aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="blue")}
     cm_plot
   })
   
   select_species<-reactive({
-    cmist_database%>%
+    CMISTdata%>%
       filter(SPC_GENUS.SPC_SPECIES==input$filterID)%>%
       filter(ASA_STUDY_AREA==input$filterRegion)
   })
@@ -772,123 +796,83 @@ server <- function(input, output, session) {
   output$table4<-renderTable({summaryRef()})
   
   
-  # wb<- reactive({
-  #   browser()
-  #   writeData(wb, "Pre_Assessment_Info", req(summaryPrep()))
-  #   addWorksheet(wb, "CMIST_Data")
-  #   addWorksheet(wb, "References")
-  #   addWorksheet(wb, "CMIST_Score")
-  #   
-  #   writeData(wb, "CMIST_Data", summaryValue())
-  #   writeData(wb, "References", summaryRef())
-  #   writeData(wb, "CMIST_Score", summaryScore())
-  # })
+  # wb<- 
+  #   #browser()
+  #   #function(file){ 
+  #   #reactive({
+  #     write.xlsx(summaryPrep(), sheetName="Pre_Assessment_Info")
+  #     #writeData(wb, "Pre_Assessment_Info", req(summaryPrep()))
+  #     addWorksheet(wb, "CMIST_Data")
+  #     addWorksheet(wb, "References")
+  #     addWorksheet(wb, "CMIST_Score")
+  # wb_ex<-reactive(  
+  #     writeData(wb, "CMIST_Data", summaryValue()),
+  #     writeData(wb, "References", summaryRef()),
+  #     writeData(wb, "CMIST_Score", summaryScore())
+      
+      # fileName<-paste(input$downloadName, ".xlsx", sep="")
+      # 
+      # filePath<-file.path(tempdir(), fileName)
+      
+      #ex_wb<-paste(input$downloadName, ".xlsx", sep="")
+      
+      #saveWorkbook(wb, file =paste(input$downloadName, ".xlsx", sep="") , overwrite = TRUE)
+    #)
+    #}
   
+
   
   
   output$downloadData<- downloadHandler(
     
     filename=function(){
+      
       paste(input$downloadName, ".xlsx", sep="")
     },
-    content=function(file){
+   
+    content=
+      function(file){
+        
+        wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
+          addWorksheet(wb, "CMIST_Data")
+          addWorksheet(wb, "References")
+          addWorksheet(wb, "CMIST_Score")
 
-      wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
-      # #wb<-createWorkbook()
-      #  #addWorksheet(wb, "Pre_Assessment_Info")
-      addWorksheet(wb, "CMIST_Data")
-      addWorksheet(wb, "References")
-      addWorksheet(wb, "CMIST_Score")
+          writeData(wb, "Pre_Assessment_Info", summaryPrep())
+          writeData(wb, "CMIST_Data", summaryValue())
+          writeData(wb, "References", summaryRef())
+          writeData(wb, "CMIST_Score", summaryScore())
 
-      writeData(wb, "Pre_Assessment_Info", summaryPrep())
-      writeData(wb, "CMIST_Data", summaryValue())
-      writeData(wb, "References", summaryRef())
-      writeData(wb, "CMIST_Score", summaryScore())
 
-      
-      saveWorkbook(wb, file, overwrite = TRUE)
-      
-    }
+          saveWorkbook(wb, file, overwrite = TRUE)
+
+        }
   
   )
   
-  # observe({
-  #   if(is.null(input$email || input$email==0)) return (NULL)
-  #      from<-isolate (input$A7)
-  #      to<-"sarah.kingsbury@dfo-mpo.gc.ca"
-  #      subject<-isolate(input$A1)
-  #      
-  #      writeData(wb, "Pre_Assessment_Info", summaryPrep())
-  #      writeData(wb, "CMIST_Data", summaryValue())
-  #      writeData(wb, "References", summaryRef())
-  #      writeData(wb, "CMIST_Score", summaryScore())
-  #      
-  #      saveWorkbook(wb, file=file, overwrite = TRUE)
-  #      
-  #      send.mail(from=from, to=to, subject = subject, attach.files = wb)
-  #   
-  # })
   
-  observeEvent(input$email,{
-# 
-#     wb<- write.xlsx(summaryPrep(), sheetName="Pre_Assessment_Info")
-#     addWorksheet(wb, "CMIST_Data")
-#     addWorksheet(wb, "References")
-#     addWorksheet(wb, "CMIST_Score")
-# 
-#     writeData(wb, "Pre_Assessment_Info", summaryPrep())
-#     writeData(wb, "CMIST_Data", summaryValue())
-#     writeData(wb, "References", summaryRef())
-#     writeData(wb, "CMIST_Score", summaryScore())
-# 
-#     saveWorkbook(wb, file=paste(input$downloadName, ".xlsx", sep=""),overwrite = TRUE)
-    # wb<-function(file){
-    #   
-    #   wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
-    #   # #wb<-createWorkbook()
-    #   #  #addWorksheet(wb, "Pre_Assessment_Info")
-    #   addWorksheet(wb, "CMIST_Data")
-    #   addWorksheet(wb, "References")
-    #   addWorksheet(wb, "CMIST_Score")
-    #   
-    #   writeData(wb, "Pre_Assessment_Info", summaryPrep())
-    #   writeData(wb, "CMIST_Data", summaryValue())
-    #   writeData(wb, "References", summaryRef())
-    #   writeData(wb, "CMIST_Score", summaryScore())
-    #   
-    #   
-    #   saveWorkbook(wb, file, overwrite = TRUE)
-    #   
-    # }
-
-    from<-"sarah.kingsbury@dfo-mpo.gc.ca"
-    to<-"sarahberry231@gmail.com"
-    subject<-#paste(
-      "CMIST Assessment" 
-      #input$A1, sep="")
-    body<- "Enter any message or considerations you would like the CMIST assessors to know."
-    
-    send.mail(from=from, to=to, subject=subject, body=body, attach.files = function(file){
-      
-      wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
-      addWorksheet(wb, "CMIST_Data")
-      addWorksheet(wb, "References")
-      addWorksheet(wb, "CMIST_Score")
-      
-      writeData(wb, "Pre_Assessment_Info", summaryPrep())
-      writeData(wb, "CMIST_Data", summaryValue())
-      writeData(wb, "References", summaryRef())
-      writeData(wb, "CMIST_Score", summaryScore())
-      
-      
-      saveWorkbook(wb, file, overwrite = TRUE)
-      
-    },
-    encoding = "iso-8859-1", html = FALSE, authenticate = FALSE, send=TRUE)
+  output$email<-observeEvent(input$email,{
+    isolate({
+      send.mail(from="sarahberry231@gmail.com", 
+                to=c("sarah.kingsbury@dfo-mpo.gc.ca"), 
+                subject="CMIST Assessment", 
+                body="Enter any message or considerations you would like the CMIST assessors to know.", 
+                smtp = list(host.name = "smtp.gmail.com",
+                            port = 465, 
+                            user.name = "sarahberry231@gmail.com",
+                            passwd = "Sarah231",
+                            ssl = TRUE),
+                authenticate = TRUE, 
+                send=TRUE,
+                attach.files = input$downloadData$datapath,
+                file.names=paste(input$downloadame, ".xlsx", sep=""),
+                debug=TRUE)
+    })
   })
   
   output$leafletmap<- renderLeaflet({
     Canada_map
+  
   })
   
 }
