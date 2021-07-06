@@ -6,7 +6,9 @@ library(tidyverse)
 library(shiny)
 library(shinydashboard)
 #devtools::install_github("https://github.com/remi-daigle/CMISTR")
+#devtools::install_github("https://github.com/remi-daigle/AIScanR")
 library(CMISTR)
+library(AIScanR)
 library(DT)
 require("leaflet.minicharts")
 library(sf)
@@ -22,78 +24,107 @@ library(dplyr)
 library(RColorBrewer)
 library(leaflet.opacity)
 library(mailR)
+library(spocc)
+library(robis)
+library(rgbif)
+library(rnaturalearth)
+#library(easyGgplot2)
 
 proj <- "+proj=longlat +datum=WGS84"
 
 #cmist_database<-read.csv("data/cmist_data.csv")
 
-CMISTdata <- get_CMIST_database()%>%
+CMISTdata <- get_CMIST_database()
+
+CMISTdata<-CMISTdata%>%
   dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(CMISTdata$SPC_GENUS, CMISTdata$SPC_SPECIES, sep = "_"),
-                                 g=as.numeric(row.names(.)))
-  # dplyr::mutate(ASA_EASTERN_LONGITUDE=as.numeric(ASA_EASTERN_LONGITUDE),
-  #               ASA_NORTHERN_LATITUDE=as.numeric(ASA_NORTHERN_LATITUDE),
-  #               ASA_SOUTHERN_LATITUDE=as.numeric(ASA_SOUTHERN_LATITUDE),
-  #               ASA_WESTERN_LONGITUDE=as.numeric(ASA_WESTERN_LONGITUDE))
-  # #group_by(g) %>%
-  # dplyr::mutate(pt1=st_point(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE), dim = XY),
-  #               pt2=st_point(c(ASA_EASTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE), dim = XY),
-  #               pt3=st_point(c(ASA_WESTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE), dim = XY),
-  #               pt4=st_point(c(ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE), dim = XY),
-  #               pt5=st_point(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE), dim = XY))%>%
-  # dplyr::mutate(geom=st_polygon(x=list(pt1, pt2, pt3, pt4, pt5)))
-
-  # dplyr::mutate(geometry=
-  #                 matrix(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
-  #                          ASA_EASTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
-  #                          ASA_WESTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
-  #                          ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
-  #                          ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE),
-  #                        ncol=2,byrow = TRUE))
-
+                g=(row.names(.)))%>%
+  dplyr::mutate(g=as.numeric(g),
+                ASU_ADJ_RISK_SCORE=as.numeric(ASU_ADJ_RISK_SCORE))
 
 #generating a geometry for polygons of the cmist database
-# mist_sf<-CMISTdata%>%
-#   rowwise() %>%
-#   dplyr::mutate(geometry=
-#            matrix(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
-#                      ASA_EASTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
-#                      ASA_WESTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
-#                      ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
-#                      ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE),
-#                   ncol=2,byrow = TRUE) %>%
-#            as.numeric()%>%
-#             list() %>%
-#             st_polygon() %>%
-#            st_sfc(proj)
-#              #st_sfc(crs="+proj=longlat +datum=WGS84")
-#          )
+
+
+mist_sf<-CMISTdata%>%
+  mutate(ASA_EASTERN_LONGITUDE=as.numeric(ASA_EASTERN_LONGITUDE),
+         ASA_NORTHERN_LATITUDE=as.numeric(ASA_NORTHERN_LATITUDE),
+         ASA_SOUTHERN_LATITUDE=as.numeric(ASA_SOUTHERN_LATITUDE),
+         ASA_WESTERN_LONGITUDE=as.numeric(ASA_WESTERN_LONGITUDE))%>%
+  rowwise() %>%
+  dplyr::mutate(geometry= (list(
+           matrix(c(ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
+                     ASA_EASTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
+                     ASA_WESTERN_LONGITUDE, ASA_SOUTHERN_LATITUDE,
+                     ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
+                     ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE),
+                  ncol=2,byrow = TRUE))) %>%
+           #mutate(geometry=as.numeric(geometry))%>%
+            #list() %>%
+            st_polygon() %>%
+           #st_sfc(proj)
+             st_sfc(crs="+proj=longlat +datum=WGS84")
+         )
+
+#The `getdata` function will query the Ocean Biogeographic Information System ([OBIS](https://obis.org/)), 
+#the Global Biodiversity Information Facility ([GBIF](https://www.gbif.org/)), 
+#and [iNaturalist](https://inaturalist.ca)
+
+
+# occ <- AIScanR::getdata(grid,latlong)
 # 
-# #setting the base map to Canada
-# Canada_map<- leaflet()%>%
-#   setView(lng=-106.9299, lat=51.9788, zoom=3)%>%
-#   addTiles()
+# set limits
+# xmin=-59.5
+# xmax=-67
+# ymin=43
+# ymax=47.5
+# proj <- 4326
 # 
-# #creating a colour pallete for the cmist database
-# mist_sf_map<-mist_sf%>%
-#   mutate(ASA_STUDY_AREA=as.factor(ASA_STUDY_AREA))%>%
-#   st_as_sf()%>%
-#   st_transform(crs=4326)
+# Canada <- ne_states(country = c("Canada","United States of America"),
+#                     returnclass = "sf") %>%
+#   st_transform(proj) %>%
+#   st_crop(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax) %>%
+#   st_combine()
+
+# format(Sys.time()-3600, '%Y-%m-%d')
 # 
-# binpal<- colorFactor("Blues", mist_sf_map$ASA_STUDY_AREA, 9)
+# occ_rec <- occ(from=c("bison","inat","idigbio"),
+#                date=c(format(Sys.time()-3600, '%Y-%m-%d'),format(Sys.time(), '%Y-%m-%d')),
+#                geometry=st_bbox(Canada),
+#                limit=100) 
 # 
-# #adding the cmist database polygons to the map
-# cmist_map<- Canada_map%>%
-#   addTiles()%>%
-#   addPolygons(data=mist_sf_map,
-#               weight=2,
-#               col='blue',
-#               fillColor = mist_sf_map$ASA_STUDY_AREA,
-#               # stroke = FALSE,
-#                fillOpacity = 0.005
-#               # layerId = "raster")
-#   )
-#   #addOpacitySlider(layerId = "raster")
-# cmist_map
+# occ_df <- occ_rec %>% 
+#   occ2df() %>%
+#   filter(!is.na(longitude),!is.na(latitude),!is.na(name)) %>% 
+#   st_as_sf(coords=c("longitude","latitude"),crs=proj)%>% 
+#   st_crop(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)
+  
+
+#setting the base map to Canada
+Canada_map<- leaflet()%>%
+  setView(lng=-106.9299, lat=51.9788, zoom=3)%>%
+  addTiles()
+
+#creating a colour pallete for the cmist database
+mist_sf_map<-mist_sf%>%
+  mutate(ASA_STUDY_AREA=as.factor(ASA_STUDY_AREA))%>%
+  st_as_sf()%>%
+  st_transform(crs=4326)
+
+binpal<- colorFactor("Blues", mist_sf_map$ASA_STUDY_AREA, 9)
+
+#adding the cmist database polygons to the map
+cmist_map<- Canada_map%>%
+  addTiles()%>%
+  addPolygons(data=mist_sf_map,
+              weight=2,
+              col='blue',
+              fillColor = mist_sf_map$ASA_STUDY_AREA,
+              # stroke = FALSE,
+               fillOpacity = 0.005
+              # layerId = "raster")
+  )
+  #addOpacitySlider(layerId = "raster")
+cmist_map
 
 ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
@@ -545,7 +576,7 @@ ui<-navbarPage(
              
              sidebarPanel(
                
-              # "CMIST Score", tableOutput("table1"),
+               "CMIST Score", tableOutput("table1"),
                h4("You can costumize the plots seen in the main panel by selecting various options below:"),
                h5("Filter plots by species:"),
                selectInput(inputId = "filterID", label="Filter by Species",
@@ -555,8 +586,8 @@ ui<-navbarPage(
                selectInput(inputId = "filterRegion", label = "Filter by Region",
                            choices = unique (CMISTdata$ASA_STUDY_AREA)),
                
-           radioButtons("err_bar", "Error Bar", c("With error bar"="yes",
-                                                  "No error bar"="no")),
+           # radioButtons("err_bar", "Error Bar", c("With error bar"="yes",
+           #                                        "No error bar"="no")),
            
            h5("Turn comparisons with other CMIST assessments on or off:"),
            radioButtons("comp", "Comparisons On/OFF",
@@ -584,21 +615,19 @@ ui<-navbarPage(
                )
                )
              )
-           # tabsetPanel(
-           #   tabPanel("Pre-Assessment Info", tableOutput("table2")),
-           #   tabPanel("CMIST Assessment", tableOutput("table3")),
-           #   tabPanel("Reference List", tableOutput("table4"))
-           # ),
-           # box(textInput("downloadName", "Specify desired name of results file"),
-           #     downloadButton("downloadData", "Download Results")
-           # )
                 
  ),
   
-  tabPanel("Interactive Map",
-           leafletOutput("leafletmap",height=800)
-  )
+  tabPanel("Explore the CMIST Database!",
+ 
+   
+     tabsetPanel(
+           tabPanel("Interactive Map",leafletOutput("leafletmap",height=800)),
+           tabPanel("CMIST Database", DT::dataTableOutput("table5"))
+     )
 )
+)
+
 
 
 server <- function(input, output, session) {
@@ -755,33 +784,38 @@ server <- function(input, output, session) {
   
   output$cmist.plot<- renderPlot({
     cm<-summaryScore()
-    cm_plot<-ggplot(cm, aes(x=Impact_Score, y=Likelihood_Score))+
-      geom_point(colour="red", size=5)
-    if(input$err_bar=="yes") {cm_plot<- cm_plot +
-      geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper))+
-      geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper))}
-    if(input$comp=="yes"){cm_plot<-
-      cm_plot+geom_point(data=CMISTdata, aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="blue")}
+    # cm_plot<-ggplot(cm, aes(x=))+
+    #   geom_point(colour="red", size=5)
+    # if(input$comp=="yes"){
+    cm_plot<-
+      ggplot(data=CMISTdata)+
+    geom_density(aes(x=ASU_ADJ_RISK_SCORE, fill=Taxonomic_Group), alpha=0.2)+
+      scale_x_discrete(name="Adjusted CMIST Risk Score",
+                       breaks=seq(0,8,1),
+                       labels=c(0,1,2,3,4,5,6,7,8)
+                       )+
+      ggtitle("CMIST Database Risk Scores by Taxonomic Group")+
+      theme_bw()
     cm_plot
   })
   
-  select_species<-reactive({
-    CMISTdata%>%
-      filter(SPC_GENUS.SPC_SPECIES==input$filterID)%>%
-      filter(ASA_STUDY_AREA==input$filterRegion)
-  })
-  
-  
-  output$filterPlot<- renderPlot({
-    cm<-summaryScore()
-    ss<-select_species()
-    p<-ggplot(cm, aes(x=Impact_Score, y=Likelihood_Score))+
-      geom_point(colour="red", size=5)
-    if(input$comp=="yes"){p<-p +geom_point(data=ss,
-                                           aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="blue")}
-    p
-  })
-  
+  # select_species<-reactive({
+  #   CMISTdata%>%
+  #     filter(SPC_GENUS.SPC_SPECIES==input$filterID)%>%
+  #     filter(ASA_STUDY_AREA==input$filterRegion)
+  # })
+  # 
+  # 
+  # output$filterPlot<- renderPlot({
+  #   cm<-summaryScore()
+  #   ss<-select_species()
+  #   p<-ggplot(cm, aes(x=Impact_Score, y=Likelihood_Score))+
+  #     geom_point(colour="red", size=5)
+  #   if(input$comp=="yes"){p<-p +geom_point(data=ss,
+  #                                          aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="blue")}
+  #   p
+  # })
+  # 
   output$cmist_score<-renderPrint({
     req(input$plot.click)
     text.cm<-summaryScore()
@@ -851,7 +885,7 @@ server <- function(input, output, session) {
   )
   
   
-  output$email<-observeEvent(input$email,{
+ observeEvent(input$email,{
     isolate({
       send.mail(from="sarahberry231@gmail.com", 
                 to=c("sarah.kingsbury@dfo-mpo.gc.ca"), 
@@ -871,8 +905,23 @@ server <- function(input, output, session) {
   })
   
   output$leafletmap<- renderLeaflet({
-    Canada_map
+    Canada_map%>%
+      addTiles()%>%
+      addPolygons(data=mist_sf_map,
+                  weight=2,
+                  col='blue',
+                  fillColor = mist_sf_map$ASA_STUDY_AREA,
+                  # stroke = FALSE,
+                  fillOpacity = 0.005,
+                  group="CMIST Regions"
+                  )%>%
+      addLayersControl(overlayGroups = "CMIST Regions")
+      
   
+  })
+  
+  output$table5<- DT::renderDataTable({
+    DT::datatable(CMISTdata)
   })
   
 }
