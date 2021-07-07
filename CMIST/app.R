@@ -1,6 +1,3 @@
-#
-# 
-#
 
 library(tidyverse)
 library(shiny)
@@ -8,7 +5,7 @@ library(shinydashboard)
 #devtools::install_github("https://github.com/remi-daigle/CMISTR")
 #devtools::install_github("https://github.com/remi-daigle/AIScanR")
 library(CMISTR)
-library(AIScanR)
+#library(AIScanR)
 library(DT)
 require("leaflet.minicharts")
 library(sf)
@@ -28,6 +25,9 @@ library(spocc)
 library(robis)
 library(rgbif)
 library(rnaturalearth)
+library(spocc)
+library(scrubr)
+library(mapr)
 #library(easyGgplot2)
 
 proj <- "+proj=longlat +datum=WGS84"
@@ -37,7 +37,7 @@ proj <- "+proj=longlat +datum=WGS84"
 CMISTdata <- get_CMIST_database()
 
 CMISTdata<-CMISTdata%>%
-  dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(CMISTdata$SPC_GENUS, CMISTdata$SPC_SPECIES, sep = "_"),
+  dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(CMISTdata$SPC_GENUS, CMISTdata$SPC_SPECIES, sep = " "),
                 g=(row.names(.)))%>%
   dplyr::mutate(g=as.numeric(g),
                 ASU_ADJ_RISK_SCORE=as.numeric(ASU_ADJ_RISK_SCORE))
@@ -65,39 +65,6 @@ mist_sf<-CMISTdata%>%
              st_sfc(crs="+proj=longlat +datum=WGS84")
          )
 
-#The `getdata` function will query the Ocean Biogeographic Information System ([OBIS](https://obis.org/)), 
-#the Global Biodiversity Information Facility ([GBIF](https://www.gbif.org/)), 
-#and [iNaturalist](https://inaturalist.ca)
-
-
-# occ <- AIScanR::getdata(grid,latlong)
-# 
-# set limits
-# xmin=-59.5
-# xmax=-67
-# ymin=43
-# ymax=47.5
-# proj <- 4326
-# 
-# Canada <- ne_states(country = c("Canada","United States of America"),
-#                     returnclass = "sf") %>%
-#   st_transform(proj) %>%
-#   st_crop(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax) %>%
-#   st_combine()
-
-# format(Sys.time()-3600, '%Y-%m-%d')
-# 
-# occ_rec <- occ(from=c("bison","inat","idigbio"),
-#                date=c(format(Sys.time()-3600, '%Y-%m-%d'),format(Sys.time(), '%Y-%m-%d')),
-#                geometry=st_bbox(Canada),
-#                limit=100) 
-# 
-# occ_df <- occ_rec %>% 
-#   occ2df() %>%
-#   filter(!is.na(longitude),!is.na(latitude),!is.na(name)) %>% 
-#   st_as_sf(coords=c("longitude","latitude"),crs=proj)%>% 
-#   st_crop(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)
-  
 
 #setting the base map to Canada
 Canada_map<- leaflet()%>%
@@ -112,6 +79,17 @@ mist_sf_map<-mist_sf%>%
 
 binpal<- colorFactor("Blues", mist_sf_map$ASA_STUDY_AREA, 9)
 
+#get species occurrence data from public records
+bounds<-c(-59.5, 43, -67, 47.5)
+cmist.occ<- occ(query='Carcinus maenas',
+                from=c('gbif', 'inat', 'obis', 'vertnet'),
+                geometry = mist_sf$geometry,
+                has_coords = TRUE)
+
+cmist.oc2<- occ2df(cmist.occ)%>%
+  mutate(longitude=as.numeric(longitude),
+         latitude=as.numeric(latitude))%>%
+  dedup()
 #adding the cmist database polygons to the map
 cmist_map<- Canada_map%>%
   addTiles()%>%
@@ -122,9 +100,17 @@ cmist_map<- Canada_map%>%
               # stroke = FALSE,
                fillOpacity = 0.005
               # layerId = "raster")
-  )
+  )%>%
+  addCircleMarkers(data=cmist.oc2, lng = ~longitude, lat= ~latitude)
   #addOpacitySlider(layerId = "raster")
 cmist_map
+
+
+
+
+  #coord_incomplete(drop = TRUE)%>% 
+  # coord_impossible()%>% 
+  # coord_unlikely()
 
 ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
