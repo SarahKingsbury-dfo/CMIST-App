@@ -79,38 +79,6 @@ mist_sf_map<-mist_sf%>%
 
 binpal<- colorFactor("Blues", mist_sf_map$ASA_STUDY_AREA, 9)
 
-#get species occurrence data from public records
-bounds<-c(-59.5, 43, -67, 47.5)
-cmist.occ<- occ(query='Carcinus maenas',
-                from=c('gbif', 'inat', 'obis', 'vertnet'),
-                geometry = mist_sf$geometry,
-                has_coords = TRUE)
-
-cmist.oc2<- occ2df(cmist.occ)%>%
-  mutate(longitude=as.numeric(longitude),
-         latitude=as.numeric(latitude))%>%
-  dedup()
-#adding the cmist database polygons to the map
-cmist_map<- Canada_map%>%
-  addTiles()%>%
-  addPolygons(data=mist_sf_map,
-              weight=2,
-              col='blue',
-              fillColor = mist_sf_map$ASA_STUDY_AREA,
-              # stroke = FALSE,
-               fillOpacity = 0.005
-              # layerId = "raster")
-  )%>%
-  addCircleMarkers(data=cmist.oc2, lng = ~longitude, lat= ~latitude)
-  #addOpacitySlider(layerId = "raster")
-cmist_map
-
-
-
-
-  #coord_incomplete(drop = TRUE)%>% 
-  # coord_impossible()%>% 
-  # coord_unlikely()
 
 ui<-navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
@@ -604,13 +572,17 @@ ui<-navbarPage(
                 
  ),
   
-  tabPanel("Explore the CMIST Database!",
- 
-   
-     tabsetPanel(
-           tabPanel("Interactive Map",leafletOutput("leafletmap",height=800)),
-           tabPanel("CMIST Database", DT::dataTableOutput("table5"))
-     )
+ tabPanel("Explore the CMIST Database",
+          h4("Use the text input box below to search public databases such as iNaturalist, GBiF, OBIS, and VertNet for species occurrence records."),
+          h4("The interactive map has multiple layers that you can choose to turn on and off."),
+          h4("The 'CMIST Database' tab contains a data table that shows all the data currently available in the CMIST Database."),
+          textInput("m1", "Search public databases by writing the name of the species you want tosee distribution data for!"),
+          radioButtons("m2", "Check whether you want to see species distribution data or not", choices = c("Don't see species data"="no",
+                                                                                                           "See species data"="yes")),
+          tabsetPanel(
+            tabPanel("Interactive Map",leafletOutput("leafletmap",height=800)),
+            tabPanel("CMIST Database", DT::dataTableOutput("table5"))
+          )
 )
 )
 
@@ -891,7 +863,8 @@ server <- function(input, output, session) {
   })
   
   output$leafletmap<- renderLeaflet({
-    Canada_map%>%
+     
+   lf<- Canada_map%>%
       addTiles()%>%
       addPolygons(data=mist_sf_map,
                   weight=2,
@@ -902,7 +875,23 @@ server <- function(input, output, session) {
                   group="CMIST Regions"
                   )%>%
       addLayersControl(overlayGroups = "CMIST Regions")
-      
+   
+   if(input$m2=="yes"){
+     
+     cmist.occ<- occ(query= input$m1,
+                     from=c('gbif', 'inat', 'obis', 'vertnet'),
+                     geometry = mist_sf$geometry,
+                     has_coords = TRUE)
+     
+     cmist.oc2<- occ2df(cmist.occ)%>%
+       mutate(longitude=as.numeric(longitude),
+              latitude=as.numeric(latitude))%>%
+       dedup()
+     
+     lf<-lf%>%
+     addCircleMarkers(data=cmist.oc2, lng = ~longitude, lat= ~latitude, popup = ~as.character(prov), label=~as.character(prov))
+     }
+  lf
   
   })
   
