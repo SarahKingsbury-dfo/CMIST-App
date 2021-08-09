@@ -3,9 +3,7 @@ library(tidyverse)
 library(shiny)
 library(shinydashboard)
 #devtools::install_github("https://github.com/remi-daigle/CMISTR")
-#devtools::install_github("https://github.com/remi-daigle/AIScanR")
 library(CMISTR)
-#library(AIScanR)
 library(DT)
 require("leaflet.minicharts")
 library(sf)
@@ -28,11 +26,11 @@ library(rnaturalearth)
 library(spocc)
 library(scrubr)
 library(mapr)
-#library(easyGgplot2)
+library(viridis)
 
 proj <- "+proj=longlat +datum=WGS84"
 
-#cmist_database<-read.csv("data/cmist_data.csv")
+cmist_database<-read.csv("data/cmist_data.csv")
 
 CMISTdata <- get_CMIST_database()
 
@@ -40,7 +38,9 @@ CMISTdata<-CMISTdata%>%
   dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(CMISTdata$SPC_GENUS, CMISTdata$SPC_SPECIES, sep = " "),
                 g=(row.names(.)))%>%
   dplyr::mutate(g=as.numeric(g),
-                ASU_ADJ_RISK_SCORE=as.numeric(ASU_ADJ_RISK_SCORE))
+                ASU_ADJ_RISK_SCORE=as.numeric(ASU_ADJ_RISK_SCORE),
+                ASU_RAW_IMPACT_INVASION=as.numeric(ASU_RAW_IMPACT_INVASION),
+                ASU_RAW_LIKELIHOOD_INVASION=as.numeric(ASU_RAW_LIKELIHOOD_INVASION))
 
 #generating a geometry for polygons of the cmist database
 
@@ -248,121 +248,121 @@ ui<-navbarPage(
                            "1.(a) Is the species established in the assessment area?",
                            c(1,2,3)),
                selectInput("U1",
-                           "1.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "1.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R1", "1.(c) Rationale:"),
+               textAreaInput("R1", "1.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species distribution data indicate species is widely dispersed in assessment area (ref).", resize = "both"),
                selectInput("Q2",
                            "2.(a) How frequently and in what numbers is the species expected to arrive into the assessment area?",
                            c(1,2,3)),
                selectInput("U2",
-                           "2.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "2.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R2", "2.(c) Rationale:"),
+               textAreaInput("R2", "2.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species distribution data and habitat suitability models indicate low arrivals (ref).", resize = "both"),
                selectInput("Q3",
                            "3.(a) How much of the assessment area offers suitable habitat for the species?",
                            c(1,2,3)),
                selectInput("U3",
-                           "3.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "3.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R3", "3.(c) Rationale:"),
+               textAreaInput("R3", "3.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Habitat suitability models indicate abundant suitable habitat (ref).", resize = "both"),
                selectInput("Q4",
                            "4.(a) How much of the assessment area offers suitable environmental conditions for the species to survive?",
                            c(1,2,3)),
                selectInput("U4",
-                           "4.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "4.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R4", "4.(c) Rationale:"),
+               textAreaInput("R4", "4.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Ecological threshold testing shows that species is highly adaptable (ref).", resize = "both"),
                selectInput("Q5",
                            "5.(a) Are the species' reproductive requirements available in the assessment area?",
                            c(1,2,3)),
                selectInput("U5",
-                           "5.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "5.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R5", "5.(c) Rationale:"),
+               textAreaInput("R5", "5.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species reproductive needs are/could be met within assessment area (ref).", resize = "both"),
                selectInput("Q6",
                            "6.(a) To what extent could natural control agents slow the species' population growth in the assessment area?",
                            c(1,2,3)),
                selectInput("U6",
-                           "6.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "6.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R6", "6.(c) Rationale:"),
+               textAreaInput("R6", "6.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. There are no known control methods that are affective for this species (ref).", resize = "both"),
                selectInput("Q7",
                            "7.(a) What is the range of the species' potential natural dispersal in the assessment area?",
                            c(1,2,3)),
                selectInput("U7",
-                           "7.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "7.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R7", "7.(c) Rationale:"),
+               textAreaInput("R7", "7.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species is like to disperse naturally within assessment area (ref).", resize = "both"),
                selectInput("Q8",
                            "8.(a) What is the range of the species' potential dispersal in the assessment area from anthropogenic mechanisms?",
                            c(1,2,3)),
                selectInput("U8",
-                           "8.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "8.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R8", "8.(c) Rationale:"),
+               textAreaInput("R8", "8.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Anthropogenic recreational water use will likely lead to furtehr species dispersal (ref).", resize = "both"),
                selectInput("Q9",
                            "9.(a) What level of impact could the species have on population growth of other species in the assessment area?",
                            c(1,2,3)),
                selectInput("U9",
-                           "9.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "9.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R9", "9.(c) Rationale:"),
+               textAreaInput("R9", "9.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species will likely outcompete native species for available resources (ref).", resize = "both"),
                selectInput("Q10",
                            "10.(a) What level of impact could the species have on communities in the assessment area?",
                            c(1,2,3)),
                selectInput("U10",
-                           "10.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "10.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R10", "10.(c) Rationale:"),
+               textAreaInput("R10", "10.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species will likely alter community structure in a top-down approach  (ref).", resize = "both"),
                selectInput("Q11",
                            "11.(a) What level of impact could the species have on habitat in the assessment area?",
                            c(1,2,3)),
                selectInput("U11",
-                           "11.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "11.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R11", "11.(c) Rationale:"),
+               textAreaInput("R11", "11.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species is documented as an ecosystem engineer and will likely alter invaded habitat (ref).", resize = "both"),
                selectInput("Q12",
                            "12.(a) What level of impact could the species have on ecosystem function in the assessment area?",
                            c(1,2,3)),
                selectInput("U12",
-                           "12.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "12.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R12", "12.(c) Rationale:"),
+               textAreaInput("R12", "12.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species presence will likely decrease aquaculture yields (ref).", resize = "both"),
                selectInput("Q13",
                            "13.(a) What level of impact could the species' associated diseases, parasites, or travellers have on other species in the assessment area?",
                            c(1,2,3)),
                selectInput("U13",
-                           "13.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "13.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R13", "13.(c) Rationale:"),
+               textAreaInput("R13", "13.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species is a known host of multiple parasites (ref).", resize = "both"),
                selectInput("Q14",
                            "14.(a) What level of genetic impact could the species have on other species in the assessment area?",
                            c(1,2,3)),
                selectInput("U14",
-                           "14.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "14.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R14", "14.(c) Rationale:"),
+               textAreaInput("R14", "14.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species may hybridize with other indigenous species (ref).", resize = "both"),
                selectInput("Q15",
                            "15.(a) What level of impact could the species have on at-risk or depleted species in the assessment area?",
                            c(1,2,3)),
                selectInput("U15",
-                           "15.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "15.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R15", "15.(c) Rationale:"),
+               textAreaInput("R15", "15.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species will impact species-at-risk life cycles, especially juvenile stages (ref).", resize = "both"),
                selectInput("Q16",
                            "16.(a) What level of impact could the species have on aquaculture and fished species in the assessment area?",
                            c(1,2,3)),
                selectInput("U16",
-                           "16.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "16.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R16", "16.(c) Rationale:"),
+               textAreaInput("R16", "16.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species will prey on mussel spat (ref).", resize = "both"),
                selectInput("Q17",
                            "17.(a) Is the species known or generally considered to be invasive anywhere in the world?",
                            c(1,2,3)),
                selectInput("U17",
-                           "17.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty",
+                           "17.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
-               textInput("R17", "17.(c) Rationale:")
+               textAreaInput("R17", "17.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species is considered invasive in USA, Mexico, and Canada (ref).", resize = "both")
               # actionButton("go", "SUBMIT")
               ),
               mainPanel(
@@ -530,18 +530,19 @@ ui<-navbarPage(
              
              sidebarPanel(
                
-               "CMIST Score", tableOutput("table1"),
                h4("You can costumize the plots seen in the main panel by selecting various options below:"),
                h5("Filter plots by species:"),
-               selectInput(inputId = "filterID", label="Filter by Species",
+               radioButtons("filters", "Species and Region Filters", c("No Filters"="no",
+                                                                       "Turn on Region Filters"="region", 
+                                                                       "Turn on Species Filters"="species", 
+                                                                       "Turn on both Region and Species Filters"="both")),
+               selectInput(inputId = "filterSpecies", label="Filter by Species",
                            choices=unique(CMISTdata$SPC_GENUS.SPC_SPECIES)),
                
                h5("Filter CMIST Scores by Geographic Region:"),
                selectInput(inputId = "filterRegion", label = "Filter by Region",
                            choices = unique (CMISTdata$ASA_STUDY_AREA)),
                
-           # radioButtons("err_bar", "Error Bar", c("With error bar"="yes",
-           #                                        "No error bar"="no")),
            
            h5("Turn comparisons with other CMIST assessments on or off:"),
            radioButtons("comp", "Comparisons On/OFF",
@@ -552,15 +553,24 @@ ui<-navbarPage(
            textInput("downloadName", "Specify desired name of results file"),
                downloadButton("downloadData", "Download Results"),
            
-           actionButton("email", label="Send to CMIST Database",
-                          icon = icon("envelope", lib="font-awesome"))
+           h4("Please submit your results to the CMIST Team to have the assessment included in the CMIST Database. Your results can help others!"),
+           h5("Once you have downloaded your results, please attache the xlsx file to an email (click link below) and send to the CMIST Assessors to have your assessment peer-reviewed. "),
+           
+           a(actionButton("email", label="Send to CMIST Database",
+                          icon = icon("envelope", lib="font-awesome")),
+             href="mailto:sarah.kingsbury@dfo-mpo.gc.ca")
            ),
            
            mainPanel(
-             plotOutput("cmist.plot", click =  "plot.click"),
-             verbatimTextOutput("text1"),
-             plotOutput("filterPlot", click="filtered.click"),
-             verbatimTextOutput("text2"),
+             h4("Hover over the plot points below to see the species, study area, and CMIST score. Each taxonomic group is a different colour and the point data (i.e. the individual data from each assessment) is a different shape depending on the taxonomic group it belongs to."),
+             plotOutput("cmist.plot", hover = hoverOpts(id="plotH")),
+             verbatimTextOutput("plotH_info"),
+             h4("Hover over the plot points below to see the species, study area, and CMIST score. The black dots are the individual assessments from the CMIST database, the yellow dot is the specific assessment for your current CMIST assessment."),
+             h5("Note: You can filter the scatter plot by geographic region, species, or both by selecting options in the side bar."),
+             plotOutput("filterPlot", hover = hoverOpts(id="plot_hover")),
+             verbatimTextOutput("plot_hoverinfo"),
+             h4("Your current CMIST Assessment Score and table outputs below:"),
+             "CMIST Score", tableOutput("table1"),
              tabsetPanel(
                tabPanel("Pre-Assessment Info", tableOutput("table2")),
                tabPanel("CMIST Assessment", tableOutput("table3")),
@@ -664,7 +674,9 @@ server <- function(input, output, session) {
       as.numeric()
   })
   
-  rationale<-reactive({r=c(R1= input$R1,
+  rationale<-reactive({
+   # browser()
+    r=c(R1= input$R1,
                          R2= input$R2,
                          R3=input$R3,
                          R4=input$R4,
@@ -700,6 +712,7 @@ server <- function(input, output, session) {
          R16="NA",
          R17="NA")
   }
+    return(r)
   })
   
   REFList<-reactive({c(C1= input$C1,
@@ -734,51 +747,122 @@ server <- function(input, output, session) {
                        C30=input$C30)
   })
   
-  summaryValue<-reactive( rbind(risk=req(risks()), uncertainties=req(uncertainties()),rational=req(rationale())))
-  summaryPrep<-reactive(prep())
+  question<-c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17")
+  
+  assessor_info<-c("Project Title",
+                   "Description",
+                   "Assessor Name",
+                   "Affiliations",
+                   "Address",
+                   "Phone Number",
+                   "Email",
+                   "AphiaID (WoRMS)",
+                   "TSN (ITIS)",
+                   "General taxon/group",
+                   "Kingdom",
+                   "phylum",
+                   "subphylum",
+                   "class",
+                   "order",
+                   "family",
+                   "genus",
+                   "species",
+                   "common name(s)",
+                   "taxonomic notes",
+                   "Study Area",
+                   "Study Region",
+                   "Ecosystem Type",
+                   "Country",
+                   "Northern Latitude",
+                   "Southern Latitude",
+                   "Western Longitude",
+                   "Eastern Longitude"
+                   )
+  
+  summaryValue<-reactive({
+    cbind(question, risk=req(risks()), uncertainties=req(uncertainties()),rationale=req(rationale()))
+    })
+  summaryPrep<-reactive({
+    cbind(assessor_info, prep= req(prep()))
+          })
   summaryRef<- reactive(REFList())
   summaryScore<- reactive(CMISTScore(req(risks()), req(uncertainties())))
   
   
   output$cmist.plot<- renderPlot({
     cm<-summaryScore()
-    # cm_plot<-ggplot(cm, aes(x=))+
-    #   geom_point(colour="red", size=5)
-    # if(input$comp=="yes"){
     cm_plot<-
-      ggplot(data=CMISTdata)+
-    geom_density(aes(x=ASU_ADJ_RISK_SCORE, fill=Taxonomic_Group), alpha=0.2)+
-      scale_x_discrete(name="Adjusted CMIST Risk Score",
-                       breaks=seq(0,8,1),
-                       labels=c(0,1,2,3,4,5,6,7,8)
-                       )+
+      ggplot(data=CMISTdata, aes(x=Taxonomic_Group, y=ASU_ADJ_RISK_SCORE, fill=Taxonomic_Group))+
+    geom_boxplot(show.legend = FALSE)+
+      scale_fill_viridis(discrete=TRUE, alpha=0.6)+
+      geom_jitter(aes(shape=Taxonomic_Group),size=2, alpha=0.9, show.legend = FALSE)+
       ggtitle("CMIST Database Risk Scores by Taxonomic Group")+
+      xlab("Taxonomic Group")+
+      ylab("Adjusted CMIST Risk Score")+
+      #theme(legend.position = "none")+
       theme_bw()
     cm_plot
   })
   
-  # select_species<-reactive({
-  #   CMISTdata%>%
-  #     filter(SPC_GENUS.SPC_SPECIES==input$filterID)%>%
-  #     filter(ASA_STUDY_AREA==input$filterRegion)
-  # })
-  # 
-  # 
-  # output$filterPlot<- renderPlot({
-  #   cm<-summaryScore()
-  #   ss<-select_species()
-  #   p<-ggplot(cm, aes(x=Impact_Score, y=Likelihood_Score))+
-  #     geom_point(colour="red", size=5)
-  #   if(input$comp=="yes"){p<-p +geom_point(data=ss,
-  #                                          aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="blue")}
-  #   p
-  # })
-  # 
+  plotH_sel<-eventReactive(input$plotH,{
+    res2<-nearPoints(CMISTdata, input$plotH, xvar="Taxonomic_Group", yvar = "ASU_ADJ_RISK_SCORE", allRows = FALSE)
+    list(paste("CMIST Score",res2$ASU_ADJ_RISK_SCORE, sep=":"), 
+         paste("Species",res2$SPC_GENUS.SPC_SPECIES, sep=":"), 
+         paste("Study Area",res2$ASA_STUDY_AREA, sep=":"))
+  })
+  
+  output$plotH_info<-renderPrint({plotH_sel()})
+
+  output$filterPlot<- renderPlot({
+    cm<-summaryScore()
+    p<-ggplot (data=cm, aes(x=Impact_Score, y=Likelihood_Score))+
+      geom_point(color="gold", size=5)+
+      geom_hline(yintercept=c(1.66,2.33), linetype="dashed", color="grey")+
+      geom_vline(xintercept=c(1.66,2.33), linetype="dashed", color="grey")+
+      ggtitle("Plot of Likelihood of Species Invasion by Risk of Impact Score")+
+      xlab("Impact Score")+
+      ylab("Likelihood Score")+
+      theme_bw()
+    if(input$comp=="yes"){p<-p +
+      geom_point(data=CMISTdata,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)}
+    if(input$filters=="region"){
+      filterData<-CMISTdata%>%
+        filter(input$filterRegion)
+      p<-p +
+        geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+    }
+    if(input$filters=="species"){
+      filterData<-CMISTdata%>%
+        filter(input$filterSpecies)
+      p<-p +
+        geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+    }
+    if(input$filters=="both"){
+      filterData<-CMISTdata%>%
+        filter(input$filterRegion$filterSpecies)
+      p<-p +
+        geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+    }
+
+     p
+  })
+
+  selCmist<-eventReactive(input$plot_hover,{
+    res<-nearPoints(CMISTdata, input$plot_hover, xvar ="ASU_RAW_IMPACT_INVASION", yvar ="ASU_RAW_LIKELIHOOD_INVASION", allRows = FALSE)
+    list(paste("CMIST Score",res$ASU_ADJ_RISK_SCORE, sep=":"), 
+         paste("Species",res$SPC_GENUS.SPC_SPECIES, sep=":"), 
+         paste("Study Area",res$ASA_STUDY_AREA, sep=":"))
+  })
+  
+  output$plot_hoverinfo<- renderPrint({selCmist()})
+  
   output$cmist_score<-renderPrint({
     req(input$plot.click)
     text.cm<-summaryScore()
     test.cm.score<-text.cm$CMIST_Score
   })
+  
+  output$table1<- renderTable({summaryScore()})
   
   output$table2<- renderTable({summaryPrep()})
   
@@ -786,33 +870,6 @@ server <- function(input, output, session) {
   output$table3<-renderTable({summaryValue()})
   
   output$table4<-renderTable({summaryRef()})
-  
-  
-  # wb<- 
-  #   #browser()
-  #   #function(file){ 
-  #   #reactive({
-  #     write.xlsx(summaryPrep(), sheetName="Pre_Assessment_Info")
-  #     #writeData(wb, "Pre_Assessment_Info", req(summaryPrep()))
-  #     addWorksheet(wb, "CMIST_Data")
-  #     addWorksheet(wb, "References")
-  #     addWorksheet(wb, "CMIST_Score")
-  # wb_ex<-reactive(  
-  #     writeData(wb, "CMIST_Data", summaryValue()),
-  #     writeData(wb, "References", summaryRef()),
-  #     writeData(wb, "CMIST_Score", summaryScore())
-      
-      # fileName<-paste(input$downloadName, ".xlsx", sep="")
-      # 
-      # filePath<-file.path(tempdir(), fileName)
-      
-      #ex_wb<-paste(input$downloadName, ".xlsx", sep="")
-      
-      #saveWorkbook(wb, file =paste(input$downloadName, ".xlsx", sep="") , overwrite = TRUE)
-    #)
-    #}
-  
-
   
   
   output$downloadData<- downloadHandler(
@@ -843,24 +900,6 @@ server <- function(input, output, session) {
   )
   
   
- observeEvent(input$email,{
-    isolate({
-      send.mail(from="sarahberry231@gmail.com", 
-                to=c("sarah.kingsbury@dfo-mpo.gc.ca"), 
-                subject="CMIST Assessment", 
-                body="Enter any message or considerations you would like the CMIST assessors to know.", 
-                smtp = list(host.name = "smtp.gmail.com",
-                            port = 465, 
-                            user.name = "sarahberry231@gmail.com",
-                            passwd = "Sarah231",
-                            ssl = TRUE),
-                authenticate = TRUE, 
-                send=TRUE,
-                attach.files = input$downloadData$datapath,
-                file.names=paste(input$downloadame, ".xlsx", sep=""),
-                debug=TRUE)
-    })
-  })
   
   output$leafletmap<- renderLeaflet({
      
@@ -903,4 +942,5 @@ server <- function(input, output, session) {
 
 
 shinyApp(ui, server)
+
 
