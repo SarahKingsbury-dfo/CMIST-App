@@ -556,13 +556,13 @@ ui<-navbarPage(
            h4("Please submit your results to the CMIST Team to have the assessment included in the CMIST Database. Your results can help others!"),
            h5("Once you have downloaded your results, please attache the xlsx file to an email (click link below) and send to the CMIST Assessors to have your assessment peer-reviewed. "),
            
-           a(actionButton("email", label="Send to CMIST Database",
+           a(
+             actionButton("email", label="Send to CMIST Database",
                           icon = icon("envelope", lib="font-awesome")),
-             href="mailto:sarah.kingsbury@dfo-mpo.gc.ca"?
-             subject=CMIST%20Assessment&
-             body=test
-               #Please%20make%20sure%20you%20have%20attached%20the%20xlsx%20file%20before%20sending
-             ),
+             href='mailto:sarah.kingsbury@dfo-mpo.gc.ca?
+subject=CMIST%20Assessment&
+body=Please%20make%20sure%20you%20have%20attached%20the%20xlsx%20file%20before%20sending'
+           ),
            
            h5("You can also download a PDF with all the information seen on this page."),
            downloadButton("downloadPDF", "Download PDF")
@@ -588,8 +588,8 @@ ui<-navbarPage(
                )
                )
              )
+           ),
                 
- ),
   
  tabPanel("Explore the CMIST Database",
           h4("Use the text input box below to search public databases such as iNaturalist, GBiF, OBIS, and VertNet for species occurrence records."),
