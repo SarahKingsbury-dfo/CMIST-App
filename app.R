@@ -1,4 +1,4 @@
-setwd("C:/Users/KingsburyS/Desktop/RCMIST")
+# setwd("C:/Users/KingsburyS/Desktop/RCMIST")
 
 library(CMISTR)
 library(htmltools)
