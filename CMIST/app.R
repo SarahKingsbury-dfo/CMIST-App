@@ -558,8 +558,17 @@ ui<-navbarPage(
            
            a(actionButton("email", label="Send to CMIST Database",
                           icon = icon("envelope", lib="font-awesome")),
-             href="mailto:sarah.kingsbury@dfo-mpo.gc.ca")
+             href="mailto:sarah.kingsbury@dfo-mpo.gc.ca"?
+             subject=CMIST%20Assessment&
+             body=test
+               #Please%20make%20sure%20you%20have%20attached%20the%20xlsx%20file%20before%20sending
+             ),
+           
+           h5("You can also download a PDF with all the information seen on this page."),
+           downloadButton("downloadPDF", "Download PDF")
+            
            ),
+           
            
            mainPanel(
              h4("Hover over the plot points below to see the species, study area, and CMIST score. Each taxonomic group is a different colour and the point data (i.e. the individual data from each assessment) is a different shape depending on the taxonomic group it belongs to."),
@@ -897,6 +906,75 @@ server <- function(input, output, session) {
 
         }
   
+  )
+  
+  output$downloadPDF<- downloadHandler(
+    filename= function(){paste(input$downloadName, '.pdf', sep='')},
+
+    content=
+      function(file){
+        
+        cairo_pdf(filename=file,
+                  width = 18, height = 10, pointsize = 12, family = "sans", bg = "transparent",
+                  antialias = "subpixel",fallback_resolution = 300)
+        #plot(cm_plot)
+        #plot(p)
+        
+        #plot(summaryPrep)
+        
+# 
+#         prep<-summaryPrep()
+#         value<-summaryValue()
+#         ref<-summaryRef()
+#         score<-summaryScore()
+# 
+        cm<-summaryScore()
+        cm_plot<-
+          ggplot(data=CMISTdata, aes(x=Taxonomic_Group, y=ASU_ADJ_RISK_SCORE, fill=Taxonomic_Group))+
+          geom_boxplot(show.legend = FALSE)+
+          scale_fill_viridis(discrete=TRUE, alpha=0.6)+
+          geom_jitter(aes(shape=Taxonomic_Group),size=2, alpha=0.9, show.legend = FALSE)+
+          ggtitle("CMIST Database Risk Scores by Taxonomic Group")+
+          xlab("Taxonomic Group")+
+          ylab("Adjusted CMIST Risk Score")+
+          #theme(legend.position = "none")+
+          theme_bw()
+        plot(cm_plot)
+
+        p<-ggplot (data=cm, aes(x=Impact_Score, y=Likelihood_Score))+
+          geom_point(color="gold", size=5)+
+          geom_hline(yintercept=c(1.66,2.33), linetype="dashed", color="grey")+
+          geom_vline(xintercept=c(1.66,2.33), linetype="dashed", color="grey")+
+          ggtitle("Plot of Likelihood of Species Invasion by Risk of Impact Score")+
+          xlab("Impact Score")+
+          ylab("Likelihood Score")+
+          theme_bw()
+        if(input$comp=="yes"){p<-p +
+          geom_point(data=CMISTdata,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)}
+        if(input$filters=="region"){
+          filterData<-CMISTdata%>%
+            filter(input$filterRegion)
+          p<-p +
+            geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+        }
+        if(input$filters=="species"){
+          filterData<-CMISTdata%>%
+            filter(input$filterSpecies)
+          p<-p +
+            geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+        }
+        if(input$filters=="both"){
+          filterData<-CMISTdata%>%
+            filter(input$filterRegion$filterSpecies)
+          p<-p +
+            geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+        }
+
+        plot(p)
+
+        dev.off()
+      },
+contentType = "application/pdf"
   )
   
   
