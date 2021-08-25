@@ -24,6 +24,10 @@ if(!require("rnaturalearth")) install.packages("rnaturalearth")
 if(!require("scrubr")) install.packages("scrubr")
 if(!require("mapr")) install.packages("mapr")
 if(!require("viridis")) install.packages("viridis")
+if(!require("rgdal")) install.packages("rgdal")
+if(!require("maptools")) install.packages("maptools")
+if(!require("rgeos")) install.packages("rgeos")
+if(!require("meowR")) devtools::install_github("https://github.com/jebyrnes/meowR")
 
 
 proj <- "+proj=longlat +datum=WGS84"
@@ -32,6 +36,21 @@ cmist_database<-read.csv("data/cmist_data.csv")
 
 CMISTdata <- get_CMIST_database()
 
+#accesses marine ecoregions of the world (MEOW) files
+
+meow_regions<-data("regions")
+
+data(regions.df)
+
+ndf <- data.frame(Ecoregions = levels(regions.df$ECOREGION), 
+                  Values = runif(length(levels(regions.df$ECOREGION)), 0,100))
+
+makeMEOWmap(ndf, 
+            fillColName="Values", 
+            regionColName="Ecoregions",
+            add.worldmap = TRUE)
+
+#setting up CMIST database polygons
 CMISTdata<-CMISTdata%>%
   dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(CMISTdata$SPC_GENUS, CMISTdata$SPC_SPECIES, sep = " "),
                 g=(row.names(.)))%>%
@@ -225,7 +244,8 @@ ui<-navbarPage(
                h3("Study Area Information"),
             fluidRow(   
               column(4,textInput("A22", "*Area:Study Area Name")),
-              column(4,textInput("A23", "*Region:Study Region (e.g. Province, State)")),
+              column(4,selectInput("A23", "*Region:Study Region or Province (Marine Ecoregions of the World (MEOW) for marine species and Provincial boundaries for freshwater species)",
+                                 c("British Columbia", "Alberta", "Saskatchewan", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland & Labrador", "Nunavut", "Northwest Territories", "Yukon"))),
               column(4,textInput("A24", "*Country: Country of Study Area")),
               column(6,textInput("A25", "*Latitude 1: Latitude (northern boundary) in decimal degrees")),
               column(6,textInput("A26", "*Latitude 2: Latitude (southern boundary) in decimal degrees")),
@@ -774,11 +794,11 @@ server <- function(input, output, session) {
                    "family",
                    "genus",
                    "species",
+                   "Ecosystem Type",
                    "common name(s)",
                    "taxonomic notes",
                    "Study Area",
-                   "Study Region",
-                   "Ecosystem Type",
+                   "Study Region or Province",
                    "Country",
                    "Northern Latitude",
                    "Southern Latitude",
