@@ -1,0 +1,12 @@
+---
+title: "CMIST Summary"
+output: pdf_document
+params:
+  ASM_MONTH: NA
+  ASM_YEAR: NA
+---
+
+```{r}
+print(params)
+```
+
