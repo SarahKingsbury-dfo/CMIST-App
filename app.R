@@ -1244,10 +1244,10 @@ server <- function(input, output, session) {
   output$downloadPDF<- downloadHandler(
     filename= function(){
       browser()
-      rmarkdown::render("CMIST_Markdown.Rmd",
+      rmarkdown::render("CMIST_Summary.Rmd",
                         param=get_data(),
                         envir = new.env(parent = globalenv()),
-                        paste(input$downloadName, '.pdf', sep=''))
+                        output_file=paste(input$downloadName, '.pdf', sep=''))
     },
     
     content=
