@@ -32,25 +32,54 @@ if(!require("meowR")) devtools::install_github("https://github.com/jebyrnes/meow
 
 proj <- "+proj=longlat +datum=WGS84"
 
-cmist_database<-read.csv("data/cmist_data.csv")
+#cmist_database<-read.csv("data/cmist_data.csv")
 
 CMISTdata <- get_CMIST_database()
 
-#accesses marine ecoregions of the world (MEOW) files
+#accesses marine ecoregions of the world (MEOW) files through the meowR package
 
-meow_regions<-data("regions")
+data("regions")
+meow_regions<- regions %>% st_as_sf()
 
-data(regions.df)
 
-ndf <- data.frame(Ecoregions = levels(regions.df$ECOREGION), 
-                  Values = runif(length(levels(regions.df$ECOREGION)), 0,100))
+#setting up the regions for selection in the pre-assessment info
 
-makeMEOWmap(ndf, 
-            fillColName="Values", 
-            regionColName="Ecoregions",
-            add.worldmap = TRUE)
+prov<-c("British Columbia",
+        "Alberta",
+        "Saskatchewan",
+        "Ontario",
+        "Quebec",
+        "New Brunswick",
+        "Nova Scotia",
+        "Prince Edward Island",
+        "Newfoundland & Labrador",
+        "Nunavut",
+        "Northwest Territories",
+        "Yukon")
+meowR<- c("Aleutian Islands",
+          "Baffin Bay-Davis Strait",
+          "Beaufort-Amundsen-Viscount Melville-Queen Maud",
+          "Beaufort Sea-continental coast and shelf",
+          "Chukchi Sea",
+          "Eastern Bering Sea",
+          "Gulf of Alaska",
+          "Gulf of Maine/Bay of Fundy",
+          "Gulf of St. Lawerence-Eastern Scotian Shelf",
+          "High Arctic Archipelago",
+          "Hudson Complex",
+          "Lancaster Sound",
+          "North American Pacific Fijordland",
+          "Northern Grand Banks-Southern Labrador",
+          "North Greenland",
+          "Northern Labrador",
+          "Oregon, Washington, Vancouver Coast and Shelf",
+          "Puget Trough/Georgia Basin",
+          "Scotian Shelf",
+          "Southern Grand Banks-South Newfoundland",
+          "West Greenland Shelf")
 
 #setting up CMIST database polygons
+
 CMISTdata<-CMISTdata%>%
   dplyr::mutate(SPC_GENUS.SPC_SPECIES=paste(CMISTdata$SPC_GENUS, CMISTdata$SPC_SPECIES, sep = " "),
                 g=(row.names(.)))%>%
@@ -75,15 +104,13 @@ mist_sf<-CMISTdata%>%
                      ASA_WESTERN_LONGITUDE, ASA_NORTHERN_LATITUDE,
                      ASA_EASTERN_LONGITUDE, ASA_NORTHERN_LATITUDE),
                   ncol=2,byrow = TRUE))) %>%
-           #mutate(geometry=as.numeric(geometry))%>%
-            #list() %>%
             st_polygon() %>%
-           #st_sfc(proj)
              st_sfc(crs="+proj=longlat +datum=WGS84")
          )
 
 
 #setting the base map to Canada
+
 Canada_map<- leaflet()%>%
   setView(lng=-106.9299, lat=51.9788, zoom=3)%>%
   addTiles()
@@ -203,11 +230,10 @@ ui<-navbarPage(
                        h5("the portion of the habitat zone within the assessment area in which the species could live"))
               
   ),
+  
+  #Pre-assessment Questions for identifying contact person, assessment area, and species information
 
   tabPanel("Pre-Assessment Information",
-            # sidebarLayout(
-            #  
-            #   sidebarPanel(
            
            h4("Please fill in the pre-assessment information. This information will be combined with the CMIST Assessment Score information and the Reference List into a PDF, a copy of which will be sent to DFO for peer-review and the other copy sent to the assessors email address."),
            h4("Note: The CMIST Score, the assessment area, region, country, and location (i.e the latitude and longitude), and the species's information from this assessment report will become part of the CMIST database. Through collecting these value paces of information from multiple CMIST assessments, we are able to provide CMIST app users with the ability to make comparisons between regions or between species within one articular region. By using the CMIST App, you are providing your informed consent that this information will be made public. Please note that the assessor's information will not become part of any public database. Only the DFO peer-reviewers and the assessor will have access to the assessor's personal information. The DFO peer-review staff need access to the assessor's information in case further information or clarification on assessment information is needed. "),
@@ -236,27 +262,28 @@ ui<-navbarPage(
               column(4,textInput("A16", "Species Family")),
               column(4,textInput("A17", "*Species Genus")),
               column(4,textInput("A18", "*Species")),
-              column(5,selectInput("A19", "*Please select the appropriate ecosystem (either Freshwater, Brackish, or Marine)", c("Freshwater", "Marine", "Brackish"))),
-              column(5,textInput("A20", "*Please list all common names for the species (e.g. Chinese mystery snail, Mud snail, etc)")),
-              column(5,textInput("A21", "Additional Notes: Additional taxonomic notes here"))
+              column(4,selectInput("A19", "*Please select the appropriate ecosystem (either Freshwater, Brackish, or Marine)", c("Freshwater", "Marine", "Brackish"))),
+              column(4,textInput("A20", "*Please list all common names for the species (e.g. Chinese mystery snail, Mud snail, etc)")),
+              column(4,textInput("A21", "Additional Notes: Additional taxonomic notes here"))
                ),
                
                h3("Study Area Information"),
-            fluidRow(   
+            fluidRow(  
+              h4("Click on the blue regions on the map to see the name of the Marine Ecoregion of the WOrld (MEOW)"),
+              leafletOutput("meow.region.map"),
+              column(4,radioButtons("regionSelect", "*Region:Study Region or Province (Marine Ecoregions of the World (MEOW) for marine species and Provincial boundaries for freshwater species)",
+                                    choices=c("Province", "MEOW"))),
               column(4,textInput("A22", "*Area:Study Area Name")),
-              column(4,selectInput("A23", "*Region:Study Region or Province (Marine Ecoregions of the World (MEOW) for marine species and Provincial boundaries for freshwater species)",
-                                 c("British Columbia", "Alberta", "Saskatchewan", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland & Labrador", "Nunavut", "Northwest Territories", "Yukon"))),
+              column(4,selectInput("A23", "*Select Region", choices=prov )),
               column(4,textInput("A24", "*Country: Country of Study Area")),
               column(6,textInput("A25", "*Latitude 1: Latitude (northern boundary) in decimal degrees")),
               column(6,textInput("A26", "*Latitude 2: Latitude (southern boundary) in decimal degrees")),
               column(6,textInput("A27", "*Longitude 1: Longitude (western boundary) in decimal degrees")),
               column(6,textInput("A28", "*Longitude 2: Longitude (eastern boundary) in decimal degrees"))
             )
-             #   actionButton("sub", "SUBMIT")
-             # ),
-             # mainPanel(tableOutput("prepMaterials"))
- # )
   ),
+  
+  #CMIST assessment Questions w/ uncertainty and rational. Also page has instructions for the considerations for each question. 
   
   tabPanel("CMIST Assessment",
             sidebarLayout(
@@ -381,127 +408,124 @@ ui<-navbarPage(
                            "17.(b) What is the certainty (1=low certainty, 2=some certainty, 3=high certainty)",
                            c(1,2,3)),
                textAreaInput("R17", "17.(c) Rationale:", width = '100%', height = '100%', placeholder = "E.g. Species is considered invasive in USA, Mexico, and Canada (ref).", resize = "both")
-              # actionButton("go", "SUBMIT")
+             
               ),
               mainPanel(
                 h2("Question Considerations"),
-                        h4("1. This question is meant to differentiate species that are not present in the assessment area (1) from species that are established in the assessment area (3). Species that are present in the assessment area but not established would score 2."),
-                        h5("1 ??? No
-2 ??? Observed but not reported as established 
-3 ??? Yes"
-                        ),
-                        
-                        h4("2. Consider initial arrival into the assessment area by primary vectors only. Do not consider secondary spread (anthropogenic or natural) within the assessment area by species that are already established. Consider all primary anthropogenic and natural vectors for transport into the assessment area (e.g., ballast water, hull fouling, aquaculture, rafting, and natural dispersal from outside the assessment area). "),
-                        h5("1 ???  Infrequently in low numbers 
-2 ??? Frequently in low numbers OR infrequently in high numbers
-3 ??? Frequently in high numbers"
-                        ),
-                        
-                        h4("3. This question is meant to differentiate habitat specialists (1) from habitat generalists (3). Species that fall between these extremes would score 2. First consider the species' broad habitat zone (e.g., intertidal, subtidal, benthic, and pelagic). Then consider the proportion of that zone within the assessment area that offers suitable habitat for the species. Consider suitable anthropogenic habitat (e.g., docks and aquaculture sites) as well as natural habitat."),
-                        h5("1 ??? Negligible proportion of the assessment area
-2 ??? Moderate proportion of the assessment area
-3 ??? Most of the assessment area"
-                        ),
-                        
-                        h4("4. This question is meant to differentiate species with very poor environmental match for survival (1) from those with a very good environmental match (3). Species that fall between these extremes would score 2. Consider environmental conditions (e.g., temperature, salinity, and turbidity) in its suitable habitat (see Question 3).  Consider the most tolerant life stage at any time of year.  Consider survival only, not reproduction."),
-                        h5("1 ??? Negligible proportion of the assessment area
-2 ??? Moderate proportion of the assessment area
-3 ??? Most of the assessment area"
-                        ),
-                        
-                        h4("5. This question is meant to differentiate species that face severe constraints in reproduction in the assessment area and are very unlikely to reproduce in a typical year (1) from those that face few constraints in reproduction in the assessment area and are very likely to reproduce every year (3). Species that fall between these extremes would score 2.Consider any constraint (e.g., temperature, salinity, and stage-specific habitat) in the species' ontogenetic development (e.g., spawning, fertilization, and propagule dispersal) that may affect its ability to reproduce successfully in otherwise suitable habitat (see Question 3)."),
-                        h5("1 - Almost never
+                h4("1. This question is meant to differentiate species that are not present in the assessment area (1) from species that are established in the assessment area (3). Species that are present in the assessment area but not established would score 2."),
+                h5("1 - No
+2 - Observed but not reported as established 
+3 - Yes"
+                ),
+                
+                h4("2. Consider initial arrival into the assessment area by primary vectors only. Do not consider secondary spread (anthropogenic or natural) within the assessment area by species that are already established. Consider all primary anthropogenic and natural vectors for transport into the assessment area (e.g., ballast water, hull fouling, aquaculture, rafting, and natural dispersal from outside the assessment area). "),
+                h5("1 - Infrequently in low numbers 
+2 - Frequently in low numbers OR infrequently in high numbers
+3 - Frequently in high numbers"
+                ),
+                
+                h4("3. This question is meant to differentiate habitat specialists (1) from habitat generalists (3). Species that fall between these extremes would score 2. First consider the species' broad habitat zone (e.g., intertidal, subtidal, benthic, and pelagic). Then consider the proportion of that zone within the assessment area that offers suitable habitat for the species. Consider suitable anthropogenic habitat (e.g., docks and aquaculture sites) as well as natural habitat."),
+                h5("1 - Negligible proportion of the assessment area
+2 - Moderate proportion of the assessment area
+3 - Most of the assessment area"
+                ),
+                
+                h4("4. This question is meant to differentiate species with very poor environmental match for survival (1) from those with a very good environmental match (3). Species that fall between these extremes would score 2. Consider environmental conditions (e.g., temperature, salinity, and turbidity) in its suitable habitat (see Question 3).  Consider the most tolerant life stage at any time of year.  Consider survival only, not reproduction."),
+                h5("1 - Negligible proportion of the assessment area
+2 - Moderate proportion of the assessment area
+3 - Most of the assessment area"
+                ),
+                
+                h4("5. This question is meant to differentiate species that face severe constraints in reproduction in the assessment area and are very unlikely to reproduce in a typical year (1) from those that face few constraints in reproduction in the assessment area and are very likely to reproduce every year (3). Species that fall between these extremes would score 2.Consider any constraint (e.g., temperature, salinity, and stage-specific habitat) in the species' ontogenetic development (e.g., spawning, fertilization, and propagule dispersal) that may affect its ability to reproduce successfully in otherwise suitable habitat (see Question 3)."),
+                h5("1 - Almost never
 2 - Sometimes
 3 - Almost always"
-                        ),
-                        
-                        h4("6. This question is meant to differentiate species with known, effective natural control agents in the assessment area (1) from those with no known, effective natural control agents in the assessment area (3). Species with known-but not necessarily effective-natural control agents in the assessment area would score 2. Consider presence and incidence of known natural control agents (e.g., predators, competitors, disease, and disturbance) in the species' suitable habitat (see Question 3) and to what extent they could slow the species' population growth."),
-                        h5("1 - Likely to severely restrict population growth
+                ),
+                
+                h4("6. This question is meant to differentiate species with known, effective natural control agents in the assessment area (1) from those with no known, effective natural control agents in the assessment area (3). Species with known-but not necessarily effective-natural control agents in the assessment area would score 2. Consider presence and incidence of known natural control agents (e.g., predators, competitors, disease, and disturbance) in the species' suitable habitat (see Question 3) and to what extent they could slow the species' population growth."),
+                h5("1 - Likely to severely restrict population growth
 2 - Could slow population growth 
 3 - Unlikely to slow population growth"
-                        ),
-                        
-                        h4("7. This question is meant to differentiate species that face severe constraints in natural dispersal (e.g., short larval planktonic stage and sessile adults) (1) from those that face few constraints (e.g., long larval planktonic stage, motile adults) (3). Species that fall between these extremes would score 2. Consider the natural dispersal vectors (e.g., currents, rafting, and migration) for all life stages. Consider any constraints on natural dispersal vectors in the assessment area.
+                ),
+                
+                h4("7. This question is meant to differentiate species that face severe constraints in natural dispersal (e.g., short larval planktonic stage and sessile adults) (1) from those that face few constraints (e.g., long larval planktonic stage, motile adults) (3). Species that fall between these extremes would score 2. Consider the natural dispersal vectors (e.g., currents, rafting, and migration) for all life stages. Consider any constraints on natural dispersal vectors in the assessment area.
 "),
-                        h5("1 - Very limited range
+                h5("1 - Very limited range
 2 - Moderate range
 3 - Wide range
 "),
-                        
-                        h4("8. This question is meant to differentiate species likely to have little to no contact with anthropogenic mechanisms of dispersal in the assessment area (1) from those that are likely to have contact with anthropogenic mechanisms that could disperse them over large distances (e.g., among embayments) (3). Species that have contact with anthropogenic mechanisms that could disperse them over short distances (e.g., among sites in an embayment) would score a 2. Consider anthropogenic dispersal vectors (e.g., ballast, hull fouling, and aquaculture) for all life stages.
+                
+                h4("8. This question is meant to differentiate species likely to have little to no contact with anthropogenic mechanisms of dispersal in the assessment area (1) from those that are likely to have contact with anthropogenic mechanisms that could disperse them over large distances (e.g., among embayments) (3). Species that have contact with anthropogenic mechanisms that could disperse them over short distances (e.g., among sites in an embayment) would score a 2. Consider anthropogenic dispersal vectors (e.g., ballast, hull fouling, and aquaculture) for all life stages.
 "),
-                        h5("1 - Very limited range
+                h5("1 - Very limited range
 2 - Moderate range
 3 - Wide range
 "),
-                        
-                        h4("9. Only consider impacts in the species' suitable habitat (see Question 3). Consider positive and negative impacts (i.e. population increase or decrease). Consider impacts to indigenous and non-indigenous populations. Consider ecological impacts on aquaculture and commercially fished species, not economic impacts on the industry itself.
+                
+                h4("9. Only consider impacts in the species' suitable habitat (see Question 3). Consider positive and negative impacts (i.e. population increase or decrease). Consider impacts to indigenous and non-indigenous populations. Consider ecological impacts on aquaculture and commercially fished species, not economic impacts on the industry itself.
 "),
-                        h5("1 - Low or no impact
+                h5("1 - Low or no impact
 2 - High impact in few areas OR moderate impact in many areas
 3 - High impact in many areas"),
-                        
-                        h4("10. Only consider impacts in the species' suitable habitat (see Question 3). Consider positive and negative impacts (i.e. population increase or decrease). Consider impacts to indigenous and non-indigenous populations. 
+                
+                h4("10. Only consider impacts in the species' suitable habitat (see Question 3). Consider positive and negative impacts (i.e. population increase or decrease). Consider impacts to indigenous and non-indigenous populations. 
 "),
-                        h5("1 - Low or no impact
+                h5("1 - Low or no impact
 2 - High impact in few areas OR moderate impact in many areas
 3 - High impact in many areas"),
-                        
-                        h4("11. Only consider impacts in the species' suitable habitat (see Question 3) and not on associated communities. Consider habitat engineering (e.g., reef-building organisms) and habitat destruction (e.g., bioturbating organisms).
+                
+                h4("11. Only consider impacts in the species' suitable habitat (see Question 3) and not on associated communities. Consider habitat engineering (e.g., reef-building organisms) and habitat destruction (e.g., bioturbating organisms).
 "),
-                        h5("1 - Low or no impact
+                h5("1 - Low or no impact
 2 - High impact in few areas OR moderate impact in many areas
 3 - High impact in many areas"),
-                        
-                        h4("12. Only consider impacts in the species' suitable habitat (see Question 3). Consider changes (positive or negative) to the physical, chemical, and biological processes that would normally maintain the ecosystem.
+                
+                h4("12. Only consider impacts in the species' suitable habitat (see Question 3). Consider changes (positive or negative) to the physical, chemical, and biological processes that would normally maintain the ecosystem.
 "),
-                        h5("1 - Low or no impact
+                h5("1 - Low or no impact
 2 - High impact in few areas OR moderate impact in many areas
 3 - High impact in many areas"),
-                        
-                        h4("13. Only consider impacts in the species' suitable habitat (see Question 3)."),
-                        h5("1 - Low or no impact
+                
+                h4("13. Only consider impacts in the species' suitable habitat (see Question 3)."),
+                h5("1 - Low or no impact
 2 - High impact in few areas OR moderate impact in many areas
 3 - High impact in many areas"),
-                        
-                        h4("14. Only consider impacts in the species' suitable habitat (see Question 3). Consider indigenous and non-indigenous species in the assessment area. Consider hybridization (among species hybridization and supplementation of genetic material between strains or varieties of a species) as well as other genetic impacts.
+                
+                h4("14. Only consider impacts in the species' suitable habitat (see Question 3). Consider indigenous and non-indigenous species in the assessment area. Consider hybridization (among species hybridization and supplementation of genetic material between strains or varieties of a species) as well as other genetic impacts.
 "),
-                        h5("1 - Low or no impact
+                h5("1 - Low or no impact
 2 - High impact in few areas OR moderate impact in many areas
 3 - High impact in many areas"),
-                        
-                        h4("15. Consider all possible impacts on species in the assessment area that are depleted, of extra value, or recognized as being at risk.
+                
+                h4("15. Consider all possible impacts on species in the assessment area that are depleted, of extra value, or recognized as being at risk.
 "),
-                        h6("1 - Low or no impact
+                h6("1 - Low or no impact
 2 - High impact in few areas OR moderate impact in many areas
 3 - High impact in many areas"),
-                        
-                        h4("16. Consider ecological impacts on aquaculture and fished species (e.g., from commercial, recreational, and indigenous fisheries) in aquaculture operations and the wild, but not economic impacts on the industry itself.
+                
+                h4("16. Consider ecological impacts on aquaculture and fished species (e.g., from commercial, recreational, and indigenous fisheries) in aquaculture operations and the wild, but not economic impacts on the industry itself.
 "),
-                        h5("1 - Low or no impact
+                h5("1 - Low or no impact
 2 - High impact in few areas OR moderate impact in many areas
 3 - High impact in many areas"),
-                        
-                        h4("17. This question is meant to differentiate species that are not invasive and not likely to be invasive based on their life history traits (1) from those that are known or generally considered to be invasive (3). An introduced species that is not generally considered to be invasive but that has traits related to invasiveness would score a 2. An introduced species can be non-invasive.
+                
+                h4("17. This question is meant to differentiate species that are not invasive and not likely to be invasive based on their life history traits (1) from those that are known or generally considered to be invasive (3). An introduced species that is not generally considered to be invasive but that has traits related to invasiveness would score a 2. An introduced species can be non-invasive.
 "),
-                        h5("1 - No
+                h5("1 - No
 2 - No, but has traits related to invasiveness
 3 - Yes"),
-                        h2("Rationale Guidance"),
+                h2("Rationale Guidance"),
                 h4("Include key information used to determine risk and uncertainty scores."),
                 h4("Include direct quotations from literature, paraphrased summaries, and statements of expert opinion."),
                 h4("In cases where the answer is one of two options (e.g., high impact in few areas OR moderate impact in many areas), indicate which option was favoured and why."),
                 h4("Include annotated references in the text (e.g., Drolet et al. 2016; EOL; personal observation). Please include full citations in the this section.")
-                # tableOutput("cmist.table"),
-                # tableOutput("cmist.score")
-                )
+              )
             )
   ),
   
+  #Reference tab. Anything can be added into the box. 
+  
   tabPanel("References",
-           # sidebarLayout(
-           #   
-           #   sidebarPanel(
            h4("Please list all references used in the rationales."),
            h4("Also include other resources used during the assessment (e.g., models, environmental data, and ancillary information) in the Other Resources column."),
            h4("Links will be assumed to have been accessed on the date of the CMIST assessment but will not be maintained. References can include websites (please include the URL), publications, reports, theses, etc. Please include the URL or doi link for each reference and provide full bibliography style references."),
@@ -543,6 +567,8 @@ ui<-navbarPage(
            # )
   ),
   
+  #Summary Tab w/ filters, plots, and comparisons to the CMIST database, download report buttons, and summary tables. 
+  
   tabPanel("Summary",
            sidebarLayout(
              
@@ -559,13 +585,7 @@ ui<-navbarPage(
                
                h5("Filter CMIST Scores by Geographic Region:"),
                selectInput(inputId = "filterRegion", label = "Filter by Region",
-                           choices = unique (CMISTdata$ASA_STUDY_AREA)),
-               
-           
-           h5("Turn comparisons with other CMIST assessments on or off:"),
-           radioButtons("comp", "Comparisons On/OFF",
-                        c("Turn on comparisons"="yes",
-                          "Turn off comparisons"="no")),
+                           choices = unique (CMISTdata$Region)),
            
            h5("Download the results of your CMIST assessment including the pre-assessment information, risk assessment answers, references, and CMIST score:"),
            textInput("downloadName", "Specify desired name of results file"),
@@ -577,20 +597,20 @@ ui<-navbarPage(
            a(
              actionButton("email", label="Send to CMIST Database",
                           icon = icon("envelope", lib="font-awesome")),
-             href='mailto:sarah.kingsbury@dfo-mpo.gc.ca?
+             href='mailto:DFO.CESDDataRequest-DSECDemandededonnes.MPO@dfo-mpo.gc.ca?
 subject=CMIST%20Assessment&
 body=Please%20make%20sure%20you%20have%20attached%20the%20xlsx%20file%20before%20sending'
-           ),
+           )
            
-           h5("You can also download a PDF with all the information seen on this page."),
-           downloadButton("downloadPDF", "Download PDF")
+           # h5("You can also download a PDF with all the information seen on this page."),
+           # downloadButton("downloadPDF", "Download PDF")
             
            ),
            
            
            mainPanel(
              h4("Hover over the plot points below to see the species, study area, and CMIST score. Each taxonomic group is a different colour and the point data (i.e. the individual data from each assessment) is a different shape depending on the taxonomic group it belongs to."),
-             plotOutput("cmist.plot", hover = hoverOpts(id="plotH")),
+             plotOutput("cmist.plot", click =  clickOpts(id="plot_click1")),
              verbatimTextOutput("plotH_info"),
              h4("Hover over the plot points below to see the species, study area, and CMIST score. The black dots are the individual assessments from the CMIST database, the yellow dot is the specific assessment for your current CMIST assessment."),
              h5("Note: You can filter the scatter plot by geographic region, species, or both by selecting options in the side bar."),
@@ -608,7 +628,8 @@ body=Please%20make%20sure%20you%20have%20attached%20the%20xlsx%20file%20before%2
              )
            ),
                 
-  
+ #Map and CMIST database tab. Use this tab to see the species distribution
+ 
  tabPanel("Explore the CMIST Database",
           h4("Use the text input box below to search public databases such as iNaturalist, GBiF, OBIS, and VertNet for species occurrence records."),
           h4("The interactive map has multiple layers that you can choose to turn on and off."),
@@ -629,7 +650,7 @@ server <- function(input, output, session) {
   
   
   
-  
+  #this generates a vector string of the pre-assessment info
   prep<-reactive({c(A1= input$A1,
                     A2= input$A2,
                     A3=input$A3,
@@ -660,7 +681,7 @@ server <- function(input, output, session) {
                     A28=input$A28
   )})
   
-  
+  #this generates a vector string of the risks from the CMIST tab
   risks<- reactive({c(Q1= input$Q1,
                       Q2= input$Q2,
                       Q3=input$Q3,
@@ -681,6 +702,7 @@ server <- function(input, output, session) {
       as.numeric()
   })
   
+  #this generates a vector string of the uncertainty from the CMIST tab
   uncertainties<-reactive({c(U1= input$U1,
                              U2= input$U2,
                              U3=input$U3,
@@ -701,8 +723,8 @@ server <- function(input, output, session) {
       as.numeric()
   })
   
+  #this generates a vector string of the rationale from the CMIST tab
   rationale<-reactive({
-   # browser()
     r=c(R1= input$R1,
                          R2= input$R2,
                          R3=input$R3,
@@ -719,7 +741,8 @@ server <- function(input, output, session) {
                          R14=input$R14,
                          R15=input$R15,
                          R16=input$R16,
-                         R17=input$R17)
+  
+                               R17=input$R17)
   if(all(r=="")) {
     r<-c(R1= "NA",
          R2= "NA",
@@ -742,6 +765,8 @@ server <- function(input, output, session) {
     return(r)
   })
   
+  
+  #this generates a vector string of the references from the Reference tab
   REFList<-reactive({c(C1= input$C1,
                        C2= input$C2,
                        C3=input$C3,
@@ -774,8 +799,10 @@ server <- function(input, output, session) {
                        C30=input$C30)
   })
   
+  #this generates a vector string of the question numbers for labelling the table
   question<-c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17")
   
+  #this generates a vector string of the questions asked during the pre-assessment step
   assessor_info<-c("Project Title",
                    "Description",
                    "Assessor Name",
@@ -806,6 +833,7 @@ server <- function(input, output, session) {
                    "Eastern Longitude"
                    )
   
+  #Generating reactive tables from the information entered on the pre-assessment tab, cmist tab, and reference tab
   summaryValue<-reactive({
     cbind(question, risk=req(risks()), uncertainties=req(uncertainties()),rationale=req(rationale()))
     })
@@ -815,7 +843,29 @@ server <- function(input, output, session) {
   summaryRef<- reactive(REFList())
   summaryScore<- reactive(CMISTScore(req(risks()), req(uncertainties())))
   
+  #The meow region map from the pre-assessment info. Clicking on a blue polygon will create a opo-up with the region name.
+  output$meow.region.map<-renderLeaflet({
+    leaflet(meow_regions) %>% 
+      setView(lng=-106.9299, lat=51.9788, zoom=3)%>%
+      addTiles() %>% 
+      addPolygons(popup = meow_regions$ECOREGION)
+  })
   
+  #reactive input from choosing either MEOW or Provincial regions. This code updates the regions to select from. 
+  observeEvent(
+    input$regionSelect,{
+    if(input$regionSelect=="Province"){
+      updateSelectInput(session, "A23",label="Please select a province", choices = prov)
+    }
+  if(input$regionSelect=="MEOW"){
+    updateSelectInput(session,"A23",label="Please select a MEOW Region", choices = meowR)
+  }
+    }
+
+  )
+  
+  
+  #box and whisker plot of the CMIST-database
   output$cmist.plot<- renderPlot({
     cm<-summaryScore()
     cm_plot<-
@@ -826,20 +876,35 @@ server <- function(input, output, session) {
       ggtitle("CMIST Database Risk Scores by Taxonomic Group")+
       xlab("Taxonomic Group")+
       ylab("Adjusted CMIST Risk Score")+
-      #theme(legend.position = "none")+
       theme_bw()
     cm_plot
   })
   
-  plotH_sel<-eventReactive(input$plotH,{
-    res2<-nearPoints(CMISTdata, input$plotH, xvar="Taxonomic_Group", yvar = "ASU_ADJ_RISK_SCORE", allRows = FALSE)
-    list(paste("CMIST Score",res2$ASU_ADJ_RISK_SCORE, sep=":"), 
-         paste("Species",res2$SPC_GENUS.SPC_SPECIES, sep=":"), 
+  #This generates text from the selected points from the box and whisker plot
+  plotH_sel<-eventReactive(input$plot_click1,{
+    res2<-nearPoints(CMISTdata, input$plot_click1, #xvar="Taxonomic_Group",
+                     #yvar = "ASU_ADJ_RISK_SCORE",
+                     allRows = FALSE, 
+                     maxpoints = 1,
+                     threshold = 10)
+    list(paste("CMIST Score",res2$ASU_ADJ_RISK_SCORE, sep=":"),
+         paste("Species",res2$SPC_GENUS.SPC_SPECIES, sep=":"),
          paste("Study Area",res2$ASA_STUDY_AREA, sep=":"))
   })
   
-  output$plotH_info<-renderPrint({plotH_sel()})
-
+  #This prints the text from above
+  output$plotH_info<-renderPrint({
+    plotH_sel()
+    # score<-CMISTdata$ASU_ADJ_RISK_SCORE
+    # sp<-CMISTdata$SPC_GENUS.SPC_SPECIES
+    # paste0 ("CMIST Score=", input$plot_click1$score,
+    #         "\nSpecies=", input$plot_click1$sp
+    #         #"\nStudy Area=", input$plot_click1$ASA_STUDY_AREA
+    #         )
+    #nearPoints(CMISTdata, input$plot_click1, threshold=10, maxpoints=1, addDist=TRUE)
+    })
+  
+  #Scatter plot of score from each cmist and the cmist database
   output$filterPlot<- renderPlot({
     cm<-summaryScore()
     p<-ggplot (data=cm, aes(x=Impact_Score, y=Likelihood_Score))+
@@ -850,30 +915,46 @@ server <- function(input, output, session) {
       xlab("Impact Score")+
       ylab("Likelihood Score")+
       theme_bw()
-    if(input$comp=="yes"){p<-p +
-      geom_point(data=CMISTdata,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)}
+    #plot when no filters are applied
+    if(input$filters=="no"){
+      p<-p +
+      geom_point(data=CMISTdata,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+    }
+    #plot updated for the specified region
     if(input$filters=="region"){
-      filterData<-CMISTdata%>%
-        filter(input$filterRegion)
+      #browser()
+      filterData<-
+        CMISTdata%>%
+        dplyr::select(Region,SPC_GENUS.SPC_SPECIES, ASU_RAW_IMPACT_INVASION, ASU_RAW_LIKELIHOOD_INVASION, ASU_ADJ_RISK_SCORE )%>%
+        dplyr::filter(Region==input$filterRegion)
+      
       p<-p +
         geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
     }
+    #plot updated for the selected species from the CMIST database
     if(input$filters=="species"){
-      filterData<-CMISTdata%>%
-        filter(input$filterSpecies)
+      #browser()
+      filterData2<-
+        CMISTdata%>%
+        dplyr::select(Region,SPC_GENUS.SPC_SPECIES, ASU_RAW_IMPACT_INVASION, ASU_RAW_LIKELIHOOD_INVASION, ASU_ADJ_RISK_SCORE )%>%
+        dplyr::filter(SPC_GENUS.SPC_SPECIES==input$filterSpecies)
       p<-p +
-        geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+        geom_point(data=filterData2,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
     }
+    #plot updated for selected region and species
     if(input$filters=="both"){
-      filterData<-CMISTdata%>%
-        filter(input$filterRegion$filterSpecies)
+      filterData3<-
+        CMISTdata%>%
+        dplyr::select(Region,SPC_GENUS.SPC_SPECIES, ASU_RAW_IMPACT_INVASION, ASU_RAW_LIKELIHOOD_INVASION, ASU_ADJ_RISK_SCORE )%>%
+        dplyr::filter(Region==input$filterRegion & SPC_GENUS.SPC_SPECIES==input$filterSpecies)
       p<-p +
-        geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
+        geom_point(data=filterData3,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
     }
 
      p
   })
 
+  #reactive text from selecting a point from scatter plot
   selCmist<-eventReactive(input$plot_hover,{
     res<-nearPoints(CMISTdata, input$plot_hover, xvar ="ASU_RAW_IMPACT_INVASION", yvar ="ASU_RAW_LIKELIHOOD_INVASION", allRows = FALSE)
     list(paste("CMIST Score",res$ASU_ADJ_RISK_SCORE, sep=":"), 
@@ -883,22 +964,26 @@ server <- function(input, output, session) {
   
   output$plot_hoverinfo<- renderPrint({selCmist()})
   
+  #generates CMIST score summary from the CMIST assessment
   output$cmist_score<-renderPrint({
     req(input$plot.click)
     text.cm<-summaryScore()
     test.cm.score<-text.cm$CMIST_Score
   })
   
+  #summary table of CMIST Score
   output$table1<- renderTable({summaryScore()})
   
+  #summary table of pre-assessment info
   output$table2<- renderTable({summaryPrep()})
   
-  
+  #summary table of cmist assessment info
   output$table3<-renderTable({summaryValue()})
   
+  #summary table of references
   output$table4<-renderTable({summaryRef()})
   
-  
+  #downloadable xlsx document
   output$downloadData<- downloadHandler(
     
     filename=function(){
@@ -926,6 +1011,7 @@ server <- function(input, output, session) {
   
   )
   
+  #Downloadable PDF of the summary tab
   output$downloadPDF<- downloadHandler(
     filename= function(){paste(input$downloadName, '.pdf', sep='')},
 
@@ -996,7 +1082,7 @@ contentType = "application/pdf"
   )
   
   
-  
+  #leaflet map from the explore database tab
   output$leafletmap<- renderLeaflet({
      
    lf<- Canada_map%>%
@@ -1004,7 +1090,7 @@ contentType = "application/pdf"
       addPolygons(data=mist_sf_map,
                   weight=2,
                   col='blue',
-                  fillColor = mist_sf_map$ASA_STUDY_AREA,
+                  fillColor = mist_sf_map,
                   # stroke = FALSE,
                   fillOpacity = 0.005,
                   group="CMIST Regions"
@@ -1030,6 +1116,7 @@ contentType = "application/pdf"
   
   })
   
+  #data table of the CMIST database
   output$table5<- DT::renderDataTable({
     DT::datatable(CMISTdata)
   })
