@@ -263,7 +263,10 @@ ui<-navbarPage(
               column(4,textInput("A17", "*Species Genus")),
               column(4,textInput("A18", "*Species")),
               column(4,selectInput("A19", "*Please select the appropriate ecosystem (either Freshwater, Brackish, or Marine)", c("Freshwater", "Marine", "Brackish"))),
-              column(4,textInput("A20", "*Please list all common names for the species (e.g. Chinese mystery snail, Mud snail, etc)")),
+              column(4, textInput("A29", "Body of Water (e.g. Atlantic, Pacific, Arctic)")),
+              column(4,textInput("A20", "*Common names for the species (e.g. Chinese mystery snail)")),
+              column(4, textInput("A30", "Additional common name #2")),
+              column(4, textInput("A31", "Additional common name #3")),
               column(4,textInput("A21", "Additional Notes: Additional taxonomic notes here"))
                ),
                
@@ -847,22 +850,23 @@ server <- function(input, output, session) {
   # create function to summarize all inputs
   get_data <- reactive({
     # browser()
+    #cm<-summaryScore()
     data.frame(
     "ASM_MONTH" = month(Sys.Date()),
     "ASM_YEAR" = year(Sys.Date()),
-    "PRJ_ID" = "",
-    "COU_ID_1" = "",
-    "RG_ID" = "",
+    "PRJ_ID" = input$A1,
+    "COU_ID_1" = input$A24,
+    "RG_ID" = input$A23,
     "ASA_STUDY_AREA" = input$A22,
     "MWT_ID" = input$A19,
-    "BOW_ID" = "",
+    "BOW_ID" = input$A29,
     "ASA_NORTHERN_LATITUDE" = input$A25,
     "ASA_SOUTHERN_LATITUDE" = input$A26,
     "ASA_WESTERN_LONGITUDE" = input$A27,
     "ASA_EASTERN_LONGITUDE" = input$A28,
     "SPC_WORMS_APHIAID" = input$A8,
     "SPC_ITIS_TSN" = input$A9,
-    "TAX_ID" = "",
+    "TAX_ID" = input$A10,
     "SPC_KINGDOM" = input$A11,
     "SPC_PHYLUM" = input$A12,
     "SPC_SUBPHYLUM" = input$A13,
@@ -873,116 +877,262 @@ server <- function(input, output, session) {
     "SPC_SPECIES" = input$A18,
     "SPC_GENUS-SPC_SPECIES" = paste(input$A17,input$A18),
     "SPC_COMMON_1" = input$A20,
-    "SPC_COMMON_2" = "",
-    "SPC_COMMON_3" = "",
+    "SPC_COMMON_2" = input$A30,
+    "SPC_COMMON_3" = input$A31,
     "SPC_TAXONOMIC_NOTES" = input$A21,
+    
+    #Remi, if you're reading this I tried to add in the summaryScore information into the get_data. So far, my attempts of summaryScore$CMIST_Score and cm$CMIST_Score have failed
+    
+    # "ASU_RAW_LIKELIHOOD_INVASION" = cm$Likelihood_Score,
+    # "ASU_RAW_IMPACT_INVASION" = cm$Impact_Score,
+    # "ASU_RAW_MEAN_RISK_SCORE" = "",
+    # "ASU_ADJ_RISK_SCORE" = cm$CMIST_Score,
+    # "ASU_ADJ_LOW_CONFIDENCE_LIMIT" = cm$CMIST_Lower,
+    # "ASU_ADJ_UPPER_CONFIDENCE_LIMIT" = cm$CMSIT_Upper,
     "ASU_RAW_LIKELIHOOD_INVASION" = "",
     "ASU_RAW_IMPACT_INVASION" = "",
     "ASU_RAW_MEAN_RISK_SCORE" = "",
     "ASU_ADJ_RISK_SCORE" = "",
     "ASU_ADJ_LOW_CONFIDENCE_LIMIT" = "",
     "ASU_ADJ_UPPER_CONFIDENCE_LIMIT" = "",
-    "QST_QUESTION.1" = "",
-    "UNC_UNCERTAINTY_SCORE.1" = "",
-    "UNC_UNCERTAINTY.1" = "",
-    "QRS_RISK_SCORE.1" = "",
-    "QRS_DESCRIPTION.1" = "",
-    "QRP_RATIONALE.1" = "",
-    "QST_QUESTION.2" = "",
-    "UNC_UNCERTAINTY_SCORE.2" = "",
-    "UNC_UNCERTAINTY.2" = "",
-    "QRS_RISK_SCORE.2" = "",
-    "QRS_DESCRIPTION.2" = "",
-    "QRP_RATIONALE.2	QST_QUESTION.3" = "",
-    "UNC_UNCERTAINTY_SCORE.3" = "",
-    "UNC_UNCERTAINTY.3" = "",
-    "QRS_RISK_SCORE.3" = "",
-    "QRS_DESCRIPTION.3" = "",
-    "QRP_RATIONALE.3" = "",
-    "QST_QUESTION.4" = "",
-    "UNC_UNCERTAINTY_SCORE.4" = "",
-    "UNC_UNCERTAINTY.4" = "",
-    "QRS_RISK_SCORE.4" = "",
-    "QRS_DESCRIPTION.4" = "",
-    "QRP_RATIONALE.4" = "",
-    "QST_QUESTION.5" = "",
-    "UNC_UNCERTAINTY_SCORE.5" = "",
-    "UNC_UNCERTAINTY.5" = "",
-    "QRS_RISK_SCORE.5" = "",
-    "QRS_DESCRIPTION.5" = "",
-    "QRP_RATIONALE.5" = "",
-    "QST_QUESTION.6" = "",
-    "UNC_UNCERTAINTY_SCORE.6" = "",
-    "UNC_UNCERTAINTY.6" = "",
-    "QRS_RISK_SCORE.6" = "",
-    "QRS_DESCRIPTION.6" = "",
-    "QRP_RATIONALE.6" = "",
-    "QST_QUESTION.7" = "",
-    "UNC_UNCERTAINTY_SCORE.7" = "",
-    "UNC_UNCERTAINTY.7" = "",
-    "QRS_RISK_SCORE.7" = "",
-    "QRS_DESCRIPTION.7" = "",
-    "QRP_RATIONALE.7" = "",
-    "QST_QUESTION.8" = "",
-    "UNC_UNCERTAINTY_SCORE.8" = "",
-    "UNC_UNCERTAINTY.8" = "",
-    "QRS_RISK_SCORE.8" = "",
-    "QRS_DESCRIPTION.8" = "",
-    "QRP_RATIONALE.8" = "",
-    "QST_QUESTION.9" = "",
-    "UNC_UNCERTAINTY_SCORE.9" = "",
-    "UNC_UNCERTAINTY.9" = "",
-    "QRS_RISK_SCORE.9" = "",
-    "QRS_DESCRIPTION.9" = "",
-    "QRP_RATIONALE.9" = "",
-    "QST_QUESTION.10" = "",
-    "UNC_UNCERTAINTY_SCORE.10" = "",
-    "UNC_UNCERTAINTY.10" = "",
-    "QRS_RISK_SCORE.10" = "",
-    "QRS_DESCRIPTION.10" = "",
-    "QRP_RATIONALE.10" = "",
-    "QST_QUESTION.11" = "",
-    "UNC_UNCERTAINTY_SCORE.11" = "",
-    "UNC_UNCERTAINTY.11" = "",
-    "QRS_RISK_SCORE.11" = "",
-    "QRS_DESCRIPTION.11" = "",
-    "QRP_RATIONALE.11" = "",
-    "QST_QUESTION.12" = "",
-    "UNC_UNCERTAINTY_SCORE.12" = "",
-    "UNC_UNCERTAINTY.12" = "",
-    "QRS_RISK_SCORE.12" = "",
-    "QRS_DESCRIPTION.12" = "",
-    "QRP_RATIONALE.12" = "",
-    "QST_QUESTION.13" = "",
-    "UNC_UNCERTAINTY_SCORE.13" = "",
-    "UNC_UNCERTAINTY.13" = "",
-    "QRS_RISK_SCORE.13" = "",
-    "QRS_DESCRIPTION.13" = "",
-    "QRP_RATIONALE.13" = "",
-    "QST_QUESTION.14" = "",
-    "UNC_UNCERTAINTY_SCORE.14" = "",
-    "UNC_UNCERTAINTY.14" = "",
-    "QRS_RISK_SCORE.14" = "",
-    "QRS_DESCRIPTION.14" = "",
-    "QRP_RATIONALE.14" = "",
-    "QST_QUESTION.15" = "",
-    "UNC_UNCERTAINTY_SCORE.15" = "",
-    "UNC_UNCERTAINTY.15" = "",
-    "QRS_RISK_SCORE.15" = "",
-    "QRS_DESCRIPTION.15" = "",
-    "QRP_RATIONALE.15" = "",
-    "QST_QUESTION.16" = "",
-    "UNC_UNCERTAINTY_SCORE.16" = "",
-    "UNC_UNCERTAINTY.16" = "",
-    "QRS_RISK_SCORE.16" = "",
-    "QRS_DESCRIPTION.16" = "",
-    "QRP_RATIONALE.16" = "",
-    "QST_QUESTION.17" = "",
-    "UNC_UNCERTAINTY_SCORE.17" = "",
-    "UNC_UNCERTAINTY.17" = "",
-    "QRS_RISK_SCORE.17" = "",
-    "QRS_DESCRIPTION.17" = "",
-    "QRP_RATIONALE.17" = ""
+    "QST_QUESTION.1" = "Is the species established in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.1" = input$U1,
+    "UNC_UNCERTAINTY.1" = case_when(
+      input$U1==1~"Low certainty",
+      input$U1==2~"Medium certainty",
+      input$U1==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.1" = input$Q1,
+    "QRS_DESCRIPTION.1" = case_when(
+      input$Q1==1~"No",
+      input$Q1==2~"Observed",
+      input$Q1==3~"Yes"
+    ),
+    "QRP_RATIONALE.1" = input$R1,
+    "QST_QUESTION.2" = "How frequently and in what numbers is the species expected to arrive into the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.2" = input$U2,
+    "UNC_UNCERTAINTY.2" = case_when(
+      input$U2==1~"Low certainty",
+      input$U2==2~"Medium certainty",
+      input$U2==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.2" = input$Q2,
+    "QRS_DESCRIPTION.2" = case_when(
+      input$Q2==1~"Infrequently in low numbers",
+      input$Q2==2~"Frequently in low numbers OR infrequently in high numbers",
+      input$Q2==3~"Frequently in high numbers"
+    ),
+    "QRP_RATIONALE.2"=input$R2,
+    "QST_QUESTION.3" = "How much of the assessment area offers suitable habitat for the species?",
+    "UNC_UNCERTAINTY_SCORE.3" = input$U3,
+    "UNC_UNCERTAINTY.3" = case_when(
+      input$U3==1~"Low certainty",
+      input$U3==2~"Medium certainty",
+      input$U3==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.3" = input$Q3,
+    "QRS_DESCRIPTION.3" = case_when(
+      input$Q3==1~"Negligible proportion of the assessment area",
+      input$Q3==2~"Moderate proportion of the assessment area",
+      input$Q3==3~"Most of the assessment area"
+    ),
+    "QRP_RATIONALE.3" = input$R3,
+    "QST_QUESTION.4" = "How much of the assessment area offers suitable environmental conditions for the species to survive?",
+    "UNC_UNCERTAINTY_SCORE.4" = input$U4,
+    "UNC_UNCERTAINTY.4" = case_when(
+      input$U4==1~"Low certainty",
+      input$U4==2~"Medium certainty",
+      input$U4==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.4" = input$Q4,
+    "QRS_DESCRIPTION.4" = case_when(
+      input$Q4==1~"Negligible proportion of the assessment area",
+      input$Q4==2~"Moderate proportion of the assessment area",
+      input$Q4==3~"Most of the assessment area"
+    ),
+    "QRP_RATIONALE.4" = input$R4,
+    "QST_QUESTION.5" = "Are the species' reproductive requirements available in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.5" = input$U5,
+    "UNC_UNCERTAINTY.5" = case_when(
+      input$U5==1~"Low certainty",
+      input$U5==2~"Medium certainty",
+      input$U5==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.5" = input$Q5,
+    "QRS_DESCRIPTION.5" = case_when(
+      input$Q5==1~"Almost never",
+      input$Q5==2~"Sometimes",
+      input$Q5==3~"Almost always"
+    ),
+    "QRP_RATIONALE.5" = input$R5,
+    "QST_QUESTION.6" = "To what extent could natural control agents slow the species' population growth in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.6" = input$U6,
+    "UNC_UNCERTAINTY.6" = case_when(
+      input$U6==1~"Low certainty",
+      input$U6==2~"Medium certainty",
+      input$U6==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.6" = input$Q6,
+    "QRS_DESCRIPTION.6" = case_when(
+      input$Q6==1~"Likely to severely restrict population growth",
+      input$Q6==2~"Could slow population growth",
+      input$Q6==3~"Unlikely to slow population growth"
+    ),
+    "QRP_RATIONALE.6" = input$R6,
+    "QST_QUESTION.7" = "What is the range of the species' potential natural dispersal in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.7" = input$U7,
+    "UNC_UNCERTAINTY.7" = case_when(
+      input$U7==1~"Low certainty",
+      input$U7==2~"Medium certainty",
+      input$U7==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.7" = input$Q7,
+    "QRS_DESCRIPTION.7" = case_when(
+      input$Q7==1~"Very limited range",
+      input$Q7==2~"Moderate range",
+      input$Q7==3~"Wide range"
+    ),
+    "QRP_RATIONALE.7" = input$R7,
+    "QST_QUESTION.8" = "What is the range of the species' potential dispersal in the assessment area from anthropogenic mechanisms?",
+    "UNC_UNCERTAINTY_SCORE.8" = input$U8,
+    "UNC_UNCERTAINTY.8" = case_when(
+      input$U8==1~"Low certainty",
+      input$U8==2~"Medium certainty",
+      input$U8==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.8" = input$Q8,
+    "QRS_DESCRIPTION.8" = case_when(
+      input$Q8==1~"Very limited range",
+      input$Q8==2~"Moderate range",
+      input$Q8==3~"Wide range"
+    ),
+    "QRP_RATIONALE.8" = input$R8,
+    "QST_QUESTION.9" = "What level of impact could the species have on population growth of other species in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.9" = input$U9,
+    "UNC_UNCERTAINTY.9" = case_when(
+      input$U9==1~"Low certainty",
+      input$U9==2~"Medium certainty",
+      input$U9==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.9" = input$Q9,
+    "QRS_DESCRIPTION.9" = case_when(
+      input$Q9==1~"Low or no impact",
+      input$Q9==2~"High impact in few areas OR moderate impact in many areas",
+      input$Q9==3~"High impact in many areas"
+    ),
+    "QRP_RATIONALE.9" = input$R9,
+    "QST_QUESTION.10" = "What level of impact could the species have on communities in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.10" = input$U10,
+    "UNC_UNCERTAINTY.10" = case_when(
+      input$U10==1~"Low certainty",
+      input$U10==2~"Medium certainty",
+      input$U10==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.10" = input$Q10,
+    "QRS_DESCRIPTION.10" = case_when(
+      input$Q10==1~"Low or no impact",
+      input$Q10==2~"High impact in few areas OR moderate impact in many areas",
+      input$Q10==3~"High impact in many areas"
+    ),
+    "QRP_RATIONALE.10" = input$R10,
+    "QST_QUESTION.11" = "What level of impact could the species have on habitat in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.11" = input$U11,
+    "UNC_UNCERTAINTY.11" = case_when(
+      input$U11==1~"Low certainty",
+      input$U11==2~"Medium certainty",
+      input$U11==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.11" = input$Q11,
+    "QRS_DESCRIPTION.11" = case_when(
+      input$Q11==1~"Low or no impact",
+      input$Q11==2~"High impact in few areas OR moderate impact in many areas",
+      input$Q11==3~"High impact in many areas"
+    ),
+    "QRP_RATIONALE.11" = input$R11,
+    "QST_QUESTION.12" = "What level of impact could the species have on ecosystem function in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.12" = input$U12,
+    "UNC_UNCERTAINTY.12" = case_when(
+      input$U12==1~"Low certainty",
+      input$U12==2~"Medium certainty",
+      input$U12==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.12" = input$Q12,
+    "QRS_DESCRIPTION.12" = case_when(
+      input$Q12==1~"Low or no impact",
+      input$Q12==2~"High impact in few areas OR moderate impact in many areas",
+      input$Q12==3~"High impact in many areas"
+    ),
+    "QRP_RATIONALE.12" = input$R12,
+    "QST_QUESTION.13" = "What level of impact could the species' associated diseases, parasites, or travellers have on other species in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.13" =input$U13 ,
+    "UNC_UNCERTAINTY.13" = case_when(
+      input$U13==1~"Low certainty",
+      input$U13==2~"Medium certainty",
+      input$U13==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.13" = input$Q13,
+    "QRS_DESCRIPTION.13" = case_when(
+      input$Q13==1~"Low or no impact",
+      input$Q13==2~"High impact in few areas OR moderate impact in many areas",
+      input$Q13==3~"High impact in many areas"
+    ),
+    "QRP_RATIONALE.13" = input$R13,
+    "QST_QUESTION.14" = "What level of genetic impact could the species have on other species in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.14" = input$U14,
+    "UNC_UNCERTAINTY.14" = case_when(
+      input$U14==1~"Low certainty",
+      input$U14==2~"Medium certainty",
+      input$U14==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.14" = input$Q14,
+    "QRS_DESCRIPTION.14" = case_when(
+      input$Q14==1~"Low or no impact",
+      input$Q14==2~"High impact in few areas OR moderate impact in many areas",
+      input$Q14==3~"High impact in many areas"
+    ),
+    "QRP_RATIONALE.14" = input$R14,
+    "QST_QUESTION.15" = "What level of impact could the species have on at-risk or depleted species in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.15" = input$U15,
+    "UNC_UNCERTAINTY.15" = case_when(
+      input$U15==1~"Low certainty",
+      input$U15==2~"Medium certainty",
+      input$U15==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.15" = input$Q15,
+    "QRS_DESCRIPTION.15" = case_when(
+      input$Q15==1~"Low or no impact",
+      input$Q15==2~"High impact in few areas OR moderate impact in many areas",
+      input$Q15==3~"High impact in many areas"
+    ),
+    "QRP_RATIONALE.15" = input$R15,
+    "QST_QUESTION.16" = " What level of impact could the species have on aquaculture and commercially fished species in the assessment area?",
+    "UNC_UNCERTAINTY_SCORE.16" = input$U16,
+    "UNC_UNCERTAINTY.16" = case_when(
+      input$U16==1~"Low certainty",
+      input$U16==2~"Medium certainty",
+      input$U16==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.16" = input$Q16,
+    "QRS_DESCRIPTION.16" = case_when(
+      input$Q16==1~"Low or no impact",
+      input$Q16==2~"High impact in few areas OR moderate impact in many areas",
+      input$Q16==3~"High impact in many areas"
+    ),
+    "QRP_RATIONALE.16" = input$R16,
+    "QST_QUESTION.17" = "Is the species known or generally considered to be invasive anywhere in the world?",
+    "UNC_UNCERTAINTY_SCORE.17" = input$U17,
+    "UNC_UNCERTAINTY.17" = case_when(
+      input$U17==1~"Low certainty",
+      input$U17==2~"Medium certainty",
+      input$U17==3~"High certainty"
+    ),
+    "QRS_RISK_SCORE.17" = input$Q17,
+    "QRS_DESCRIPTION.17" = case_when(
+      input$Q17==1~"No",
+      input$Q17==2~"No, but has traits related to invasivenessMedium certainty",
+      input$Q17==3~"Yes"
+    ),
+    "QRP_RATIONALE.17" = input$R17
     )
     
   })
@@ -1243,17 +1393,24 @@ server <- function(input, output, session) {
 #   )
   output$downloadPDF<- downloadHandler(
     filename= function(){
-      browser()
-      rmarkdown::render("CMIST_Summary.Rmd",
-                        param=get_data(),
-                        envir = new.env(parent = globalenv()),
-                        output_file=paste(input$downloadName, '.pdf', sep=''))
+      paste(input$downloadName, ".docx", sep="")
+      #browser()
+      # rmarkdown::render("CMIST_Summary.Rmd",
+      #                   param=get_data(),
+      #                   envir = new.env(parent = globalenv()),
+      #                   output_file=paste(input$downloadName, '.doc', sep=''))
+      
+      
     },
     
     content=
       function(file){
-      },
-    contentType = "application/pdf"
+        doc<-docx()
+        data<- get_data()
+        doc<-addFlexTable(doc, vanilla.table(data))
+        writeDoc(doc, file)
+      }
+    #contentType = "application/doc"
       )
   
   
