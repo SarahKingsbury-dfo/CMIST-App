@@ -129,7 +129,7 @@ ui<-navbarPage(
   
   tabPanel("CMIST Home Page",
            tabsetPanel(
-             tabPanel("The CMIST App",
+             tabPanel("About CMIST",
                       h3("Highlights"),
                       h5(".	CMIST was designed for and tested with marine invertebrates, but its theoretical basis and general questions make it suitable for other organisms."),
                       h5(".	Screening-level risk assessments in CMIST are designed to be completed in 1-2 days including collection of information and answering questions. "),
@@ -156,7 +156,7 @@ ui<-navbarPage(
                       Prior to assessment, assessors should review background information on the species and assessment area and familiarize themselves with CMIST questions, answers, guidance, and glossary."),
                       
                       ),
-             tabPanel("Using CMIST",
+             tabPanel("CMIST Explained",
                       #h3("Using CMIST"),
                       h3("1) Assessment Information"),
                       h4("This section contains general information about the species, the assessment area, and the assessor. If you submit your assessment for inclusion in the CMIST database, you must complete all information labelled with an asterisk. Contact information including address, phone, and email is for communication purposes only and will not be made publicly available."),
@@ -193,8 +193,18 @@ ui<-navbarPage(
                       h4("Literature Cited"),
                       h5("DFO (2009) Development of a framework and principles for the biogeographic classification of Canadian marine areas. DFO Canadian Science Advisory Secretariat Science Advisory Report 2009/056, p 17"),
                       h5("DFO (2016) Proceedings of the national science advisory process to peer review the marine screening-level risk assessment tool for aquatic non-indigenous species; February 4-6, 2015. DFO Can. Sci. Advis. Sec. Proceed. Ser. 2016/033"),
-                      h5("Drolet D, DiBacco C, Locke A, McKenzie CH, McKindsey CW, Moore AM, Webb JL, Therriault TW (2016) Evaluation of a new screening-level risk assessment tool applied to non-indigenous marine invertebrates in Canadian coastal waters. Biological Invasions. 18(1): 279-294 DOI:10.1007/s10530-015-1008-y"))
-           ),
+                      h5("Drolet D, DiBacco C, Locke A, McKenzie CH, McKindsey CW, Moore AM, Webb JL, Therriault TW (2016) Evaluation of a new screening-level risk assessment tool applied to non-indigenous marine invertebrates in Canadian coastal waters. Biological Invasions. 18(1): 279-294 DOI:10.1007/s10530-015-1008-y")),
+             tabPanel("Using the App",
+                      h3("The Information Tabs"),
+                      h4("The information tabs are the Pre-Assessment, CMIST, and Reference tabs. Fill-in the appropriate information for each tab."),
+                      h4("Note: Some boxes have the * symbol throughout the Pre-Assessment tab because these are boxes that require information for the assessment to be considered complete. Also, the box for the study area region can be specified as either provincial boundaries or Marine Ecosystem Regions of the World (MEOW). There is a map in the Pre-Asessment tab to help decide which MEOW region best describes your marine study area."),
+                      h3("The Summary Tab"),
+                      h4("The Summary Tab has options to download the content from the Information tabs into a csv file. This csv file can be attached to an email (generated when you click the email to CMIST database box)."),
+                      h4("IMPORTANT: It is critical that we all contribute to the CMIST database. The more CMIST assessments submited to the database, the more data points will area in the plots on the Summary Tab. These plots can be used to compare CMIST scores of various species within a region or one species across multiple regions or both!"),
+                      h3("The Explore Tab"),
+                      h4("This tab has a map that has a datalayer that can be clicked on-and-off that shows Cmist assessment regions from previous assessments. Also, it is possible to access species occurrence records and plot those in the map."),
+                      h4("This tab also has a sub-tab that shows all the CMIST database taken from the CMIST website (https://www.bio.gc.ca/science/monitoring-monitorage/cmist/index-en.php).")
+                      ),
               tabPanel("Glossary",
                        h3("assessment area"),
                        h5("an area of any size as pre-defined by the user for the purposes of the assessment"),
@@ -229,7 +239,7 @@ ui<-navbarPage(
                        h3("suitable habitat"),
                        h5("the portion of the habitat zone within the assessment area in which the species could live"))
               
-  ),
+  )),
   
   #Pre-assessment Questions for identifying contact person, assessment area, and species information
 
@@ -564,10 +574,6 @@ ui<-navbarPage(
                column(4,textInput("C29", "Reference:")),
                column(4,textInput("C30", "Reference:"))
              )
-           #     actionButton("ref", "SUBMIT")
-           #   ),
-           #   mainPanel(tableOutput("references")) 
-           # )
   ),
   
   #Summary Tab w/ filters, plots, and comparisons to the CMIST database, download report buttons, and summary tables. 
@@ -603,10 +609,10 @@ ui<-navbarPage(
              href='mailto:DFO.CESDDataRequest-DSECDemandededonnes.MPO@dfo-mpo.gc.ca?
 subject=CMIST%20Assessment&
 body=Please%20make%20sure%20you%20have%20attached%20the%20xlsx%20file%20before%20sending'
-           ),
-           
-           h5("You can also download a PDF with all the information seen on this page."),
-           downloadButton("downloadPDF", "Download PDF")
+           )
+           # 
+           # h5("You can also download a PDF with all the information seen on this page."),
+           # downloadButton("downloadPDF", "Download PDF")
             
            ),
            
@@ -880,15 +886,12 @@ server <- function(input, output, session) {
     "SPC_COMMON_2" = input$A30,
     "SPC_COMMON_3" = input$A31,
     "SPC_TAXONOMIC_NOTES" = input$A21,
-    
-    #Remi, if you're reading this I tried to add in the summaryScore information into the get_data. So far, my attempts of summaryScore$CMIST_Score and cm$CMIST_Score have failed
-    
-    # "ASU_RAW_LIKELIHOOD_INVASION" = cm$Likelihood_Score,
-    # "ASU_RAW_IMPACT_INVASION" = cm$Impact_Score,
-    # "ASU_RAW_MEAN_RISK_SCORE" = "",
-    # "ASU_ADJ_RISK_SCORE" = cm$CMIST_Score,
-    # "ASU_ADJ_LOW_CONFIDENCE_LIMIT" = cm$CMIST_Lower,
-    # "ASU_ADJ_UPPER_CONFIDENCE_LIMIT" = cm$CMSIT_Upper,
+    "ASU_RAW_LIKELIHOOD_INVASION" = "",
+    "ASU_RAW_IMPACT_INVASION" = "",
+    "ASU_RAW_MEAN_RISK_SCORE" = "",
+    "ASU_ADJ_RISK_SCORE" = "",
+    "ASU_ADJ_LOW_CONFIDENCE_LIMIT" = "",
+    "ASU_ADJ_UPPER_CONFIDENCE_LIMIT" = "",
     "ASU_RAW_LIKELIHOOD_INVASION" = "",
     "ASU_RAW_IMPACT_INVASION" = "",
     "ASU_RAW_MEAN_RISK_SCORE" = "",
@@ -1190,13 +1193,6 @@ server <- function(input, output, session) {
   #This prints the text from above
   output$plotH_info<-renderPrint({
     plotH_sel()
-    # score<-CMISTdata$ASU_ADJ_RISK_SCORE
-    # sp<-CMISTdata$SPC_GENUS.SPC_SPECIES
-    # paste0 ("CMIST Score=", input$plot_click1$score,
-    #         "\nSpecies=", input$plot_click1$sp
-    #         #"\nStudy Area=", input$plot_click1$ASA_STUDY_AREA
-    #         )
-    #nearPoints(CMISTdata, input$plot_click1, threshold=10, maxpoints=1, addDist=TRUE)
     })
   
   #Scatter plot of score from each cmist and the cmist database
@@ -1278,33 +1274,7 @@ server <- function(input, output, session) {
   #summary table of references
   output$table4<-renderTable({summaryRef()})
   
-  #downloadable xlsx document
-  # output$downloadData<- downloadHandler(
-  #   
-  #   filename=function(){
-  #     
-  #     paste(input$downloadName, ".xlsx", sep="")
-  #   },
-  #  
-  #   content=
-  #     function(file){
-  #       
-  #       wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
-  #         addWorksheet(wb, "CMIST_Data")
-  #         addWorksheet(wb, "References")
-  #         addWorksheet(wb, "CMIST_Score")
-  # 
-  #         writeData(wb, "Pre_Assessment_Info", summaryPrep())
-  #         writeData(wb, "CMIST_Data", summaryValue())
-  #         writeData(wb, "References", summaryRef())
-  #         writeData(wb, "CMIST_Score", summaryScore())
-  # 
-  # 
-  #         saveWorkbook(wb, file, overwrite = TRUE)
-  # 
-  #       }
-  # 
-  # )
+  #downloadable csv document
   
   output$downloadData<- downloadHandler(
     
@@ -1315,103 +1285,48 @@ server <- function(input, output, session) {
     
     content=
       function(file){
+        
+        wb<- write.xlsx(summaryPrep(), file, sheetName="Pre_Assessment_Info")
+                addWorksheet(wb, "CMIST_Data")
+                addWorksheet(wb, "References")
+                addWorksheet(wb, "CMIST_Score")
 
-        write.csv(get_data(),file,row.names = FALSE)
+                writeData(wb, "Pre_Assessment_Info", summaryPrep())
+                writeData(wb, "CMIST_Data", get_data())
+                writeData(wb, "References", summaryRef())
+                writeData(wb, "CMIST_Score", summaryScore())
+                
+        saveWorkbook(wb, file, overwrite = TRUE)
+
+        #write.csv(get_data(),file,row.names = FALSE)
         
       }
     
   )
   
   #Downloadable PDF of the summary tab
-#   output$downloadPDF<- downloadHandler(
-#     filename= function(){paste(input$downloadName, '.pdf', sep='')},
-# 
-#     content=
-#       function(file){
-#         
-#         cairo_pdf(filename=file,
-#                   width = 18, height = 10, pointsize = 12, family = "sans", bg = "transparent",
-#                   antialias = "subpixel",fallback_resolution = 300)
-#         #plot(cm_plot)
-#         #plot(p)
-#         
-#         #plot(summaryPrep)
-#         
-# # 
-# #         prep<-summaryPrep()
-# #         value<-summaryValue()
-# #         ref<-summaryRef()
-# #         score<-summaryScore()
-# # 
-#         cm<-summaryScore()
-#         cm_plot<-
-#           ggplot(data=CMISTdata, aes(x=Taxonomic_Group, y=ASU_ADJ_RISK_SCORE, fill=Taxonomic_Group))+
-#           geom_boxplot(show.legend = FALSE)+
-#           scale_fill_viridis(discrete=TRUE, alpha=0.6)+
-#           geom_jitter(aes(shape=Taxonomic_Group),size=2, alpha=0.9, show.legend = FALSE)+
-#           ggtitle("CMIST Database Risk Scores by Taxonomic Group")+
-#           xlab("Taxonomic Group")+
-#           ylab("Adjusted CMIST Risk Score")+
-#           #theme(legend.position = "none")+
-#           theme_bw()
-#         plot(cm_plot)
-# 
-#         p<-ggplot (data=cm, aes(x=Impact_Score, y=Likelihood_Score))+
-#           geom_point(color="gold", size=5)+
-#           geom_hline(yintercept=c(1.66,2.33), linetype="dashed", color="grey")+
-#           geom_vline(xintercept=c(1.66,2.33), linetype="dashed", color="grey")+
-#           ggtitle("Plot of Likelihood of Species Invasion by Risk of Impact Score")+
-#           xlab("Impact Score")+
-#           ylab("Likelihood Score")+
-#           theme_bw()
-#         if(input$comp=="yes"){p<-p +
-#           geom_point(data=CMISTdata,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)}
-#         if(input$filters=="region"){
-#           filterData<-CMISTdata%>%
-#             filter(input$filterRegion)
-#           p<-p +
-#             geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
-#         }
-#         if(input$filters=="species"){
-#           filterData<-CMISTdata%>%
-#             filter(input$filterSpecies)
-#           p<-p +
-#             geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
-#         }
-#         if(input$filters=="both"){
-#           filterData<-CMISTdata%>%
-#             filter(input$filterRegion$filterSpecies)
-#           p<-p +
-#             geom_point(data=filterData,aes(x=ASU_RAW_IMPACT_INVASION, y=ASU_RAW_LIKELIHOOD_INVASION), colour="black", position = "jitter", alpha=0.6)
-#         }
-# 
-#         plot(p)
-# 
-#         dev.off()
-#       },
-# contentType = "application/pdf"
-#   )
-  output$downloadPDF<- downloadHandler(
-    filename= function(){
-      paste(input$downloadName, ".docx", sep="")
-      #browser()
-      # rmarkdown::render("CMIST_Summary.Rmd",
-      #                   param=get_data(),
-      #                   envir = new.env(parent = globalenv()),
-      #                   output_file=paste(input$downloadName, '.doc', sep=''))
-      
-      
-    },
-    
-    content=
-      function(file){
-        doc<-docx()
-        data<- get_data()
-        doc<-addFlexTable(doc, vanilla.table(data))
-        writeDoc(doc, file)
-      }
-    #contentType = "application/doc"
-      )
+  
+  # output$downloadPDF<- downloadHandler(
+  #   filename= function(){
+  #     paste(input$downloadName, ".pdf", sep="")
+  #     #browser()
+  #     rmarkdown::render("CMIST_Summary.Rmd",
+  #                       param=get_data(),
+  #                       envir = new.env(parent = globalenv()),
+  #                       output_file=paste(input$downloadName, '.pdf', sep=''))
+  # 
+  # 
+  #   },
+  #   
+  #   content=
+  #     function(file){
+  #       doc<-docx()
+  #       data<- get_data()
+  #       doc<-addFlexTable(doc, vanilla.table(data))
+  #       writeDoc(doc, file)
+  #     }
+  #   contentType = "application/pdf"
+  #     )
   
   
   #leaflet map from the explore database tab
