@@ -1,0 +1,13 @@
+name: CMIST-Shiny-App
+title: CMIST-Shiny-App
+username:
+account: mar-dfo-ais-sarahk
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4620952
+bundleId: 5016356
+url: https://mar-dfo-ais-sarahk.shinyapps.io/CMIST-Shiny-App/
+when: 1631201921.90238
+lastSyncTime: 1631201921.90238
+asMultiple: FALSE
+asStatic: FALSE
