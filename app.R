@@ -124,12 +124,20 @@ mist_sf_map<-mist_sf%>%
 binpal<- colorFactor("Blues", mist_sf_map$ASA_STUDY_AREA, 9)
 
 
-ui<-navbarPage(
+ui<-
+  #shinyUI(
+  function(request){
+  navbarPage(
   title = "Canadian Marine Invasive Screening Tool (CMIST) App",
   
+  
   tabPanel("CMIST Home Page",
+          
+           
            tabsetPanel(
              tabPanel("About CMIST",
+                      h4("Note: Before you start using this app, please read the Manual, Using the App, and Saving Your Work tabs."),
+                      br(),
                       h3("Highlights"),
                       h5(".	CMIST was designed for and tested with marine invertebrates, but its theoretical basis and general questions make it suitable for other organisms."),
                       h5(".	Screening-level risk assessments in CMIST are designed to be completed in 1-2 days including collection of information and answering questions. "),
@@ -138,11 +146,15 @@ ui<-navbarPage(
                       h5(".	Assessors should always use their best judgement when interpreting questions, answers, and guidance for the selected species, which will likely not have species or taxon-specific examples."),
                       h5(".	Assessors should read the 'CMIST Manual tab' before completing any assessments to ensure consistency with guidance."),
                       
+                      br(),
+                      
                       h3("Introduction"),
                       h5("CMIST (Canadian Marine Invasive Screening Tool) assessments provide information on the likelihood and impact of invasions of different species in different assessment areas with scores adjusted for assessor uncertainty. Together, these assessments act as a new resource of collated information on invasive species that can assist researchers and managers dealing with aquatic invasive species (AIS) and increase the efficiency of decision-making. The growing database of CMIST assessments is as an important repository for information on invasive species for students, researchers, and citizens around the world."),
                       h5("The Canadian Marine Invasive Screening Tool (CMIST) is a peer-reviewed screening-level risk assessment tool for marine invasive species (Drolet et al. 2016). It is a short questionnaire that follows the invasion process from arrival to impact and is designed so an informed assessor can evaluate one species in an assessment area in approximately one day using easily accessible information from internet databases, primary literature, and grey literature. Species can be those with an invasion history in an area or those that are candidates for future invasions."),
                       h5("CMIST is score-based and incorporates both likelihood and impact of invasion as well as uncertainty. Questions are general to make CMIST broadly applicable to different taxa, different assessment areas, and different project goals. To date, CMIST has been tested with molluscs, tunicates, crustaceans, and polychaetes introduced or at risk of introduction to three Canadian marine ecoregions (DFO 2009). CMIST has also been successfully applied to non-indigenous freshwater fish in British Columbia with adapted guidelines (T. Therriault, pers. comm.). Upon completion, CMIST produces a risk score adjusted for the assessor's uncertainty which, combined with information collected during the assessment, can be used to assist in management decisions. For example, in 2015, CMIST assessments were used to identify high risk invaders in three Canadian marine ecoregions (DFO 2016). Completed assessments submitted from assessors are reviewed for accuracy and completeness then housed online in the searchable CMIST database."),
                       h5("This manual contains best practices for using CMIST and should be read in full before proceeding with an assessment to achieve consistent results. For more in-depth background information, refer to Drolet et al. (2016)."),
+                      
+                      br(),
                       
                       h3("Pre-assessment Preparation"),
                       h4("Species"),
@@ -214,6 +226,37 @@ ui<-navbarPage(
                       h4("This tab also has a sub-tab that shows all the CMIST database taken from the CMIST website (https://www.bio.gc.ca/science/monitoring-monitorage/cmist/index-en.php).")
                       ),
              
+             tabPanel("Saving Your Work",
+                      h3("Saving Your Work:"), 
+                      h4("If your CMIST assessment is incomplete or you feel that you need to leave the app inactive for more than 5 mins at a time, we recommend that you save your work."),
+                      h4("There are two options for saving your work:"),
+                      h4("Option 1: Bookmark your work using the button below.
+                  This is the best option for short-term saving and for individuals that do not wish to have a file downloaded to their computer.
+                  The information entered into the app will be encoded into a URL.
+                  You will need to have this URL on-hand to reaccess the app in the state which you have saved it.
+                  You will need a new URL each time you provide new input data."),
+                      # h4("Option 2: Save a copy to your desktop. If you feel that you will be away/inactive in your assessment a little longer (e.g. more than 1-day), we recommend that you save a copy to you computer.
+                      # The app has a file path pre-loaded (~/user_inputs.csv), which will automatically save a csv file to the DOcument folder on your computer. Once you have completed this step, you can close the app or leave it as long as you like inactive. By clicking the 'Load inputs' button the app will automatically access the 'user_inputs.csv' file from your computer and willreload your saved work.
+                      #    By keeping the file path (~/user_inputs.csv) the same, you can continuously resave to the same file/overwrite the old file without creating additional csv files."),
+                      h4("Option 2: On the 'Summary tab' you can download a csv copy of your work completed to date.
+                This is the only accepted file to be submitted to the CMIST database because it will contain extra tabs and will seperate out the information into easy to understand tables.
+                The benefit of using the 'Bookmark' function or the 'Load or Save input' function is that the user will not need to re-enter information.
+                Using the 'Download Results' function from the 'Summary tab' will require that the user either merge the multiple draft copies of csv files saved to the user's computer or copying and pasting the data from the csv back into the app."),
+                      
+                      br(),
+                      bookmarkButton(),
+                      
+               # h4("If you expect to leave this page inactive for longer than 5 mins or close the app at any point, please save your data"),
+               # h4("To save your data using the 'Load or Save input' functions, please enter the file path where you would like the data to save in the 'Inputs Location' box below. 
+               #    The 'Save inputs' button will save the information as a csv on your computer. 
+               #    To reaccess the saved information, enter the file path and hit 'Load input.'"),
+               # textInput(inputId = 'inputsLocation', label = 'Inputs Location', value = "~/user_inputs.csv"),
+               # actionButton('load_inputs', 'Load inputs'),
+               # actionButton('save_inputs', 'Save inputs'),
+               # br(),
+               # br()
+             ),
+             
               tabPanel("Glossary",
                        h3("assessment area"),
                        h5("an area of any size as pre-defined by the user for the purposes of the assessment"),
@@ -233,7 +276,7 @@ ui<-navbarPage(
                        h3("habitat"),
                        h5("the locality, site, and particular type of local environment occupied by an organism"),
                        
-                       h3("invasive???"),
+                       h3("invasive"),
                        h5("a nonindigenous species that spreads rapidly, causing environmental or economic damage (definition often used by managers)"),
                        
                        h3("other species"),
@@ -256,7 +299,8 @@ ui<-navbarPage(
            
            h4("Please fill in the pre-assessment information. This information will be combined with the CMIST Assessment Score information and the Reference List into a PDF, a copy of which will be sent to DFO for peer-review and the other copy sent to the assessors email address."),
            h4("Note: The CMIST Score, the assessment area, region, country, and location (i.e the latitude and longitude), and the species's information from this assessment report will become part of the CMIST database. Through collecting these valuable pieces of information from multiple CMIST assessments, we are able to provide CMIST app users with the ability to make comparisons between regions or between species within one particular region, within a taxon, or throughout Canada. By using the CMIST App, you are providing your informed consent that this information will be made public. Please note that the assessor's information will not become part of any public database. Only the DFO peer-reviewers and the assessor will have access to the assessor's personal information. The DFO peer-review staff need access to the assessor's information in case further information or clarification on assessment information is needed. "),
-               
+          
+           
                h3("Assessor Information"),
            fluidRow(
                column(6, textInput("A1", "*Title: Project Title (e.g. Cipangopaludina chinensis Assessment-Maritime Region)")),
@@ -309,6 +353,7 @@ ui<-navbarPage(
   #CMIST assessment Questions w/ uncertainty and rational. Also page has instructions for the considerations for each question. 
   
   tabPanel("CMIST Assessment",
+           h4("Note: There is no 'submit' button on this page. Any information entered into this tab will automatically be entered into a table in the 'Summary tab.' The CMIST Score will be calculted automatically as well once all 17 questions and uncertainties are answered in this tab, which can be seen in the 'Summary tab.'"),
             sidebarLayout(
               
               sidebarPanel(
@@ -612,7 +657,6 @@ ui<-navbarPage(
   
   tabPanel("References",
            h4("Please list all references used in the rationales."),
-           h4("Also include other resources used during the assessment (e.g., models, environmental data, and ancillary information) in the Other Resources column."),
            h4("Links will be assumed to have been accessed on the date of the CMIST assessment but will not be maintained. References can include websites (please include the URL), publications, reports, theses, etc. Please include the URL or doi link for each reference and provide full bibliography style references."),
            h4("Note: The boxes provide below are for ALL types of references. App users can provide full bibliography-style references or links to applicable websites or a few lines of text explaining a personal experience."),
              fluidRow( 
@@ -645,7 +689,77 @@ ui<-navbarPage(
                column(4,textInput("C27", "Reference:")),
                column(4,textInput("C28", "Reference:")),
                column(4,textInput("C29", "Reference:")),
-               column(4,textInput("C30", "Reference:"))
+               column(4,textInput("C30", "Reference:")),
+               column(4,textInput("C31", "Reference:")),
+               column(4,textInput("C32", "Reference:")),
+               column(4,textInput("C33", "Reference:")),
+               column(4,textInput("C34", "Reference:")),
+               column(4,textInput("C35", "Reference:")),
+               column(4,textInput("C36", "Reference:")),
+               column(4,textInput("C37", "Reference:")),
+               column(4,textInput("C38", "Reference:")),
+               column(4,textInput("C39", "Reference:")),
+               column(4,textInput("C40", "Reference:")),
+               column(4,textInput("C41", "Reference:")),
+               column(4,textInput("C42", "Reference:")),
+               column(4,textInput("C43", "Reference:")),
+               column(4,textInput("C44", "Reference:")),
+               column(4,textInput("C45", "Reference:")),
+               column(4,textInput("C46", "Reference:")),
+               column(4,textInput("C47", "Reference:")),
+               column(4,textInput("C48", "Reference:")),
+               column(4,textInput("C49", "Reference:")),
+               column(4,textInput("C50", "Reference:")),
+               column(4,textInput("C51", "Reference:")),
+               column(4,textInput("C52", "Reference:")),
+               column(4,textInput("C53", "Reference:")),
+               column(4,textInput("C54", "Reference:")),
+               column(4,textInput("C55", "Reference:")),
+               column(4,textInput("C56", "Reference:")),
+               column(4,textInput("C57", "Reference:")),
+               column(4,textInput("C58", "Reference:")),
+               column(4,textInput("C59", "Reference:")),
+               column(4,textInput("C60", "Reference:")),
+               column(4,textInput("C61", "Reference:")),
+               column(4,textInput("C62", "Reference:")),
+               column(4,textInput("C63", "Reference:")),
+               column(4,textInput("C64", "Reference:")),
+               column(4,textInput("C65", "Reference:")),
+               column(4,textInput("C66", "Reference:")),
+               column(4,textInput("C67", "Reference:")),
+               column(4,textInput("C68", "Reference:")),
+               column(4,textInput("C69", "Reference:")),
+               column(4,textInput("C70", "Reference:")),
+               column(4,textInput("C71", "Reference:")),
+               column(4,textInput("C72", "Reference:")),
+               column(4,textInput("C73", "Reference:")),
+               column(4,textInput("C74", "Reference:")),
+               column(4,textInput("C75", "Reference:")),
+               column(4,textInput("C76", "Reference:")),
+               column(4,textInput("C77", "Reference:")),
+               column(4,textInput("C78", "Reference:")),
+               column(4,textInput("C79", "Reference:")),
+               column(4,textInput("C80", "Reference:")),
+               column(4,textInput("C81", "Reference:")),
+               column(4,textInput("C82", "Reference:")),
+               column(4,textInput("C83", "Reference:")),
+               column(4,textInput("C84", "Reference:")),
+               column(4,textInput("C85", "Reference:")),
+               column(4,textInput("C86", "Reference:")),
+               column(4,textInput("C87", "Reference:")),
+               column(4,textInput("C88", "Reference:")),
+               column(4,textInput("C89", "Reference:")),
+               column(4,textInput("C90", "Reference:")),
+               column(4,textInput("C91", "Reference:")),
+               column(4,textInput("C92", "Reference:")),
+               column(4,textInput("C93", "Reference:")),
+               column(4,textInput("C94", "Reference:")),
+               column(4,textInput("C95", "Reference:")),
+               column(4,textInput("C96", "Reference:")),
+               column(4,textInput("C97", "Reference:")),
+               column(4,textInput("C98", "Reference:")),
+               column(4,textInput("C99", "Reference:")),
+               column(4,textInput("C100", "Reference:"))
              )
   ),
   
@@ -692,14 +806,18 @@ body=Please%20make%20sure%20you%20have%20attached%20the%20xlsx%20file%20before%2
            
            
            mainPanel(
-             h4("Hover over the plot points below to see the species, study area, and CMIST score. Each taxonomic group is a different colour and the point data (i.e. the individual data from each assessment) is a different shape depending on the taxonomic group it belongs to."),
+             h3("The plots seen below are based on data extracted from the CMIST database. Therefore, it is extremely important that everyone submit their CMIST assessments to the CMIST database, so that we can continue to grow these comparisons and offer more complex plots."),
+             br(),
+             h4("Click a point on the plot points below to see the species, study area, and CMIST score. Each taxonomic group is a different colour and the point data (i.e. the individual data from each assessment) is a different shape depending on the taxonomic group it belongs to."),
              plotOutput("cmist.plot", click =  clickOpts(id="plot_click1")),
              verbatimTextOutput("plotH_info"),
-             h4("Hover over the plot points below to see the species, study area, and CMIST score. The black dots are the individual assessments from the CMIST database, the yellow dot is the specific assessment for your current CMIST assessment."),
+             br(),
+             h4("Click a point on the the plot points below to see the species, study area, and CMIST score. The black dots are the individual assessments from the CMIST database, the yellow dot is the specific assessment for your current CMIST assessment."),
              h5("Note: You can filter the scatter plot by geographic region, species, or both by selecting options in the side bar."),
              plotOutput("filterPlot", hover = hoverOpts(id="plot_hover")),
              verbatimTextOutput("plot_hoverinfo"),
-             h4("Your current CMIST Assessment Score and table outputs below:"),
+             br(),
+              h4("Your current CMIST Assessment Score and table outputs below:"),
              "CMIST Score", tableOutput("table1"),
              tabsetPanel(
                tabPanel("Pre-Assessment Info", tableOutput("table2")),
@@ -726,10 +844,13 @@ body=Please%20make%20sure%20you%20have%20attached%20the%20xlsx%20file%20before%2
           )
 )
 )
+}
+#)
 
 
-
-server <- function(input, output, session) {
+server <-
+  shinyServer(
+  function(input, output, session) {
   
   
   
@@ -885,7 +1006,77 @@ server <- function(input, output, session) {
                        C27=input$C27,
                        C28=input$C28,
                        C29=input$C29,
-                       C30=input$C30)
+                       C30=input$C30,
+                       C31=input$C31,
+                       C32=input$C32,
+                       C33=input$C33,
+                       C34=input$C34,
+                       C35=input$C35,
+                       C36=input$C36,
+                       C37=input$C37,
+                       C38=input$C38,
+                       C39=input$C39,
+                       C40=input$C40,
+                       C41=input$C41,
+                       C42=input$C42,
+                       C43=input$C43,
+                       C44=input$C44,
+                       C45=input$C45,
+                       C46=input$C46,
+                       C47=input$C47,
+                       C48=input$C48,
+                       C49=input$C49,
+                       C50=input$C50,
+                       C51=input$C51,
+                       C52=input$C52,
+                       C53=input$C53,
+                       C54=input$C54,
+                       C55=input$C55,
+                       C56=input$C56,
+                       C57=input$C57,
+                       C58=input$C58,
+                       C59=input$C59,
+                       C60=input$C60,
+                       C61=input$C61,
+                       C62=input$C62,
+                       C63=input$C63,
+                       C64=input$C64,
+                       C65=input$C65,
+                       C66=input$C66,
+                       C67=input$C67,
+                       C68=input$C68,
+                       C69=input$C69,
+                       C70=input$C70,
+                       C71=input$C71,
+                       C72=input$C72,
+                       C73=input$C73,
+                       C74=input$C74,
+                       C75=input$C75,
+                       C76=input$C76,
+                       C77=input$C77,
+                       C78=input$C78,
+                       C79=input$C79,
+                       C80=input$C80,
+                       C81=input$C81,
+                       C82=input$C82,
+                       C83=input$C83,
+                       C84=input$C84,
+                       C85=input$C85,
+                       C86=input$C86,
+                       C87=input$C87,
+                       C88=input$C88,
+                       C89=input$C89,
+                       C90=input$C90,
+                       C91=input$C91,
+                       C92=input$C92,
+                       C93=input$C93,
+                       C94=input$C94,
+                       C95=input$C95,
+                       C96=input$C96,
+                       C97=input$C97,
+                       C98=input$C98,
+                       C99=input$C99,
+                       C100=input$C100)
   })
   
   #this generates a vector string of the question numbers for labelling the table
@@ -1470,9 +1661,206 @@ server <- function(input, output, session) {
     DT::datatable(CMISTdata)
   })
   
+  #uploading previously saved work
+  observeEvent(input$load_inputs, {
+    # Load inputs
+    uploaded_inputs <- read.csv(input$inputsLocation)
+    # Update each input
+    for(i in 1:nrow(uploaded_inputs)){
+      updateNumericInput(session,
+                         inputId = uploaded_inputs$inputId[i],
+                         value = uploaded_inputs$value[i])
+    }
+  })
+  
+  # #Saving inputs 
+  # observeEvent(input$save_inputs, {
+  #   # Define inputs to save
+  #   inputs_to_save <- c('A1',
+  #                       'A2',
+  #                       'A3',
+  #                       'A4',
+  #                       'A5',
+  #                       'A6',
+  #                       'A7',
+  #                       'A8',
+  #                       'A9',
+  #                       'A10',
+  #                       'A11',
+  #                       'A12',
+  #                       'A13',
+  #                       'A14',
+  #                       'A15',
+  #                       'A16',
+  #                       'A17',
+  #                       'A18',
+  #                       'A19',
+  #                       'A29',
+  #                       'A20',
+  #                       'A30',
+  #                       'A31',
+  #                       'A21',
+  #                       'A22',
+  #                       'A23',
+  #                       'A24',
+  #                       'A25',
+  #                       'A26',
+  #                       'A27',
+  #                       'A28',
+  #                       'Q1',
+  #                       'Q2',
+  #                       'Q3',
+  #                       'Q4',
+  #                       'Q5',
+  #                       'Q6',
+  #                       'Q7',
+  #                       'Q8',
+  #                       'Q9',
+  #                       'Q10',
+  #                       'Q11',
+  #                       'Q12',
+  #                       'Q13',
+  #                       'Q14',
+  #                       'Q15',
+  #                       'Q16',
+  #                       'Q17',
+  #                       'U1',
+  #                       'U2',
+  #                       'U3',
+  #                       'U4',
+  #                       'U5',
+  #                       'U6',
+  #                       'U7',
+  #                       'U8',
+  #                       'U9',
+  #                       'U10',
+  #                       'U11',
+  #                       'U12',
+  #                       'U13',
+  #                       'U14',
+  #                       'U15',
+  #                       'U16',
+  #                       'U17',
+  #                       'C1',
+  #                       'C2',
+  #                       'C3',
+  #                       'C4',
+  #                       'C5',
+  #                       'C6',
+  #                       'C7',
+  #                       'C8',
+  #                       'C9',
+  #                       'C10',
+  #                       'C11',
+  #                       'C12',
+  #                       'C13',
+  #                       'C14',
+  #                       'C15',
+  #                       'C16',
+  #                       'C17',
+  #                       'C18',
+  #                       'C19',
+  #                       'C20',
+  #                       'C21',
+  #                       'C22',
+  #                       'C23',
+  #                       'C24',
+  #                       'C25',
+  #                       'C26',
+  #                       'C27',
+  #                       'C28',
+  #                       'C29',
+  #                       'C30',
+  #                       'C31',
+  #                       'C32',
+  #                       'C33',
+  #                       'C34',
+  #                       'C35',
+  #                       'C36',
+  #                       'C37',
+  #                       'C38',
+  #                       'C39',
+  #                       'C40',
+  #                       'C41',
+  #                       'C42',
+  #                       'C43',
+  #                       'C44',
+  #                       'C45',
+  #                       'C46',
+  #                       'C47',
+  #                       'C48',
+  #                       'C49',
+  #                       'C50',
+  #                       'C51',
+  #                       'C52',
+  #                       'C53',
+  #                       'C54',
+  #                       'C55',
+  #                       'C56',
+  #                       'C57',
+  #                       'C58',
+  #                       'C59',
+  #                       'C60',
+  #                       'C61',
+  #                       'C62',
+  #                       'C63',
+  #                       'C64',
+  #                       'C65',
+  #                       'C66',
+  #                       'C67',
+  #                       'C68',
+  #                       'C69',
+  #                       'C70',
+  #                       'C71',
+  #                       'C72',
+  #                       'C73',
+  #                       'C74',
+  #                       'C75',
+  #                       'C76',
+  #                       'C77',
+  #                       'C78',
+  #                       'C79',
+  #                       'C80',
+  #                       'C81',
+  #                       'C82',
+  #                       'C83',
+  #                       'C84',
+  #                       'C85',
+  #                       'C86',
+  #                       'C87',
+  #                       'C88',
+  #                       'C89',
+  #                       'C90',
+  #                       'C91',
+  #                       'C92',
+  #                       'C93',
+  #                       'C94',
+  #                       'C95',
+  #                       'C96',
+  #                       'C97',
+  #                       'C98',
+  #                       'C99',
+  #                       'C100'
+  #                       
+  #   )
+  #   # Declare inputs
+  #   inputs <- NULL
+  #   # Append all inputs before saving to folder
+  #   for(input.i in inputs_to_save){
+  #     inputs <- append(inputs, input[[input.i]])
+  #   }
+  #   # Inputs data.frame
+  #   inputs_data_frame <- data.frame(inputId = inputs_to_save, value = inputs)
+  #   # Save Inputs
+  #   write.csv(inputs_data_frame, file = input$inputsLocation, row.names = FALSE)
+  # }) 
+  
+  
 }
+)
 
-
-shinyApp(ui, server)
+shinyApp(ui=ui, server=server,  
+        enableBookmarking = "url"
+         )
 
 
