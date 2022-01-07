@@ -439,7 +439,7 @@ ui<-
                          "),
                       
                        br(),
-                  fileInput("file", "File Input", accept = ".csv")
+                  fileInput("file", "File Input", accept = ".xlsx"),
                       # bookmarkButton(),
                       
                # h4("If you expect to leave this page inactive for longer than 5 mins or close the app at any point, please save your data"),
@@ -2234,7 +2234,16 @@ server <-
   #   write.csv(inputs_data_frame, file = input$inputsLocation, row.names = FALSE)
   # }) 
   
+  data<-reactive({
+    #browser()
+    req(input$file)
+  })
   
+  observeEvent(input$file,{
+    req(data())
+    updateTextInput(session, "A1", value=data$prep[2])
+    
+  })
 }
 )
 
